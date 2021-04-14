@@ -1,0 +1,172 @@
+const mongoose = require('mongoose');
+const Admin = require('../models/admin.models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
+
+
+module.exports.adminRegister = (req,res,next)=>{
+   /* let formatedphone = '';
+    let phone = req.body.mobile;
+    if (phone.charAt(0) == '0') {
+        formatedphone = '+251' + phone.substring(1);
+    } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
+        formatedphone = phone
+    }*/
+
+    var admin = new Admin({
+        userName:req.body.userName,
+        email:req.body.email,
+        password:req.body.password,
+        role:"Admin"
+
+    });
+    
+    admin.save((err,doc)=>{
+        if(!err)
+            res.status(201).send(doc);
+        else{
+            if(err)
+                res.status(422).send(err.errors.email.message);
+            else
+                return next(err);    
+        }
+            
+    });
+}
+
+module.exports.normalUserRegister = (req,res,next)=>{
+     var admin = new Admin({
+         userName:req.body.userName,
+         email:req.body.email,
+         password:req.body.password,
+         role:"NormalUser"
+         });
+     
+     admin.save((err,doc)=>{
+         if(!err)
+             res.status(201).send(doc);
+         else{
+             if(err)
+                 res.status(422).send(err.errors.email.message);
+             else
+                 return next(err);    
+         }
+             
+     });
+ }
+
+module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
+    console.log("request sent");
+    if(!req.body.email && !req.body.password){
+        return res.status(400).send({
+                 message:"this content cann't be empty"
+        });
+    }
+    
+    const salt = await bcrypt.genSaltSync(10);
+    const password = await req.body.password;
+    
+    Admin.findByIdAndUpdate(req.params.id,{
+        $set:{
+            userName:req.body.userName,
+            email:req.body.email,
+            password:bcrypt.hashSync(password, salt)
+
+        }
+    }, {new: true})
+    .then(admin => {
+        if(!admin) {
+            return res.status(404).send({
+                message: "Admin or NormalUser not found with this " + req.params.id
+            });
+        }
+        res.send({
+               message:"Profile Update Successfully !!"
+        });
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "Admin or NormalUser not found with this " + req.params.id
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating Admin or NormalUser profile with id " + req.params.id
+        });
+  });
+    
+}
+
+module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
+    try {
+        const { email, password } = req.body;
+        const admin = await Admin.findOne({ email });
+        if (!admin) {
+            return res.status(404).json({
+                message:'Email is not found',
+                success:false
+            })
+        }
+        let isMatch = await bcrypt.compare(password, admin.password);
+        if (isMatch) {
+            let token = jwt.sign({
+                admin_id:admin._id,
+                email:admin.email,
+                role:admin.role
+                },
+            process.env.JWT_SECRET,
+          { expiresIn :process.env.JWT_EXP });
+          let result ={
+              token: `${token}`
+             }
+         return res.status(200).json({
+              ...result,
+              message:'Login successfully !!',
+              success:true
+        }) 
+
+
+        }else{
+            return res.status(403).json({
+                message:'Incorrect password',
+                success:false
+            });
+
+        }
+       } catch (error) {
+        next(error);
+       } 
+
+}
+
+module.exports.fetchNormalUserForAdmin =(req,res)=>{
+    let role = 'NormalUser'
+    Admin.find({role:role},{salSecrete:0,__v:0},(err,result)=>{
+        if(err){
+            res.send(err)
+
+        }else{
+            res.send(result)
+        }
+
+    });
+
+}
+
+module.exports.fetchAdmin =(req,res)=>{
+    let role = 'Admin'
+    Admin.find({role:role},{salSecrete:0,__v:0},(err,result)=>{
+        if(err){
+            res.send(err)
+
+        }else{
+            res.send(result)
+        }
+
+    });
+
+}
+
+
+
+module.exports.Authenticate = passport.authenticate('jwt',{session:false});
