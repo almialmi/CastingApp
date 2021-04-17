@@ -1,7 +1,6 @@
 require('./config/config');
 require('./models/db');
 const express = require('express');
-//const bodyParser = require('body-parser');
 const passport = require('passport');
 const cors = require('cors');
 const rstIndex = require('./routes/index.route');

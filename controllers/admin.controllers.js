@@ -6,14 +6,6 @@ const passport = require('passport');
 
 
 module.exports.adminRegister = (req,res,next)=>{
-   /* let formatedphone = '';
-    let phone = req.body.mobile;
-    if (phone.charAt(0) == '0') {
-        formatedphone = '+251' + phone.substring(1);
-    } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
-        formatedphone = phone
-    }*/
-
     var admin = new Admin({
         userName:req.body.userName,
         email:req.body.email,
@@ -139,17 +131,42 @@ module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
 
 }
 
-module.exports.fetchNormalUserForAdmin =(req,res)=>{
-    let role = 'NormalUser'
-    Admin.find({role:role},{salSecrete:0,__v:0},(err,result)=>{
-        if(err){
-            res.send(err)
+module.exports.fetchNormalUserForAdmin = async(req,res)=>{
+   try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.size);
+       
+        const offset = page ? page * limit : 0;
+    
+        console.log("offset = " + offset);    
+    
+        let result = {};
+        let numOfStaffs;
+	    let role = 'NormalUser'
 
-        }else{
-            res.send(result)
-        }
+        
+        numOfStaffs = await Admin.countDocuments({});
+        result = await Admin.find({role:role},{password: 0,salSecrete:0,__v:0}) 
+                              .skip(offset) 
+                              .limit(limit); 
+          
+        const response = {
+          "totalItems": numOfStaffs,
+          "totalPages": Math.ceil(result.length / limit),
+          "pageNumber": page,
+          "pageSize": result.length,
+          "NormalUsers": result
+        };
+    
+        res.status(200).json(response);
+      } catch (error) {
+        res.status(500).send({
+          message: "Error -> Can NOT complete a paging request!",
+          error: error.message,
+        });
+      }
+ 
 
-    });
 
 }
 

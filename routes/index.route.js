@@ -38,7 +38,7 @@ router.put('/updateAdminAndNormalUserProfile/:id',jwtHelper.verifyJwtToken,ctrlA
 router.post('/adminAndNormalUserLogin',ctrlAdmin.adminAndNormalUserLogin);
 
 // fetch NormalUser for Admin
-router.get('/fetchNormalUserForAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.fetchNormalUserForAdmin);
+router.get('/fetchNormalUserForAdmin',ctrlAdmin.fetchNormalUserForAdmin);
 
 //fetch Admin
 
@@ -48,6 +48,20 @@ router.get('/fetchAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdm
 //register user 
 router.post('/registerUser',ctrlUser.userRegister);
 
+//fetch user 
+router.get('/fetchUser',ctrlUser.fetchUser);
+
+//update user
+router.put('/updateUser/:id',ctrlUser.updateUser);
+
+//delete user 
+router.delete('/deleteUser/:id',ctrlUser.deleteUser);
+
+//update like
+router.post('/updateLike/:id',ctrlUser.updateLike);
+
+//update dislike
+router.post('/updateDisLike/:id',ctrlUser.updateDisLike);
 //event section
 //register event
 router.post('/registerEvent',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlEvent.registerEvent);

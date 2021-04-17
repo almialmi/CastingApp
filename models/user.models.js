@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
-const { use } = require('../routes/index.route');
-
 var userSchema = new mongoose.Schema({
     firstName:{
         type:String,
@@ -17,7 +15,7 @@ var userSchema = new mongoose.Schema({
         unique: true
     },
     mobile:{
-        type:Number,
+        type:String,
         required:true
     },
     category:{
@@ -37,11 +35,11 @@ var userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    like:{
-        type:Number,
-        default:0
-    },
-    orderNumber:{
+    like:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Admin"
+    }],
+    disLike:{
         type:Number,
         default:0
     }
