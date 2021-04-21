@@ -38,7 +38,7 @@ router.put('/updateAdminAndNormalUserProfile/:id',jwtHelper.verifyJwtToken,ctrlA
 router.post('/adminAndNormalUserLogin',ctrlAdmin.adminAndNormalUserLogin);
 
 // fetch NormalUser for Admin
-router.get('/fetchNormalUserForAdmin',ctrlAdmin.fetchNormalUserForAdmin);
+router.get('/fetchNormalUserForAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.fetchNormalUserForAdmin);
 
 //fetch Admin
 
@@ -46,22 +46,37 @@ router.get('/fetchAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdm
 
 //user section
 //register user 
-router.post('/registerUser',ctrlUser.userRegister);
+router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.userRegister);
 
 //fetch user 
-router.get('/fetchUser',ctrlUser.fetchUser);
+router.get('/fetchUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUser);
 
 //update user
-router.put('/updateUser/:id',ctrlUser.updateUser);
+router.put('/updateUser/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateUser);
 
 //delete user 
-router.delete('/deleteUser/:id',ctrlUser.deleteUser);
+router.delete('/deleteUser/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.deleteUser);
 
 //update like
-router.post('/updateLike/:id',ctrlUser.updateLike);
+router.put('/updateLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateLike);
 
-//update dislike
-router.post('/updateDisLike/:id',ctrlUser.updateDisLike);
+//update Dislike
+router.put('/updateDisLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateDisLike);
+
+//Request section
+//create requests
+router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.createRequest);
+
+//show requests
+router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.showRequests);
+
+//approve
+router.put('/approveRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.acceptRequests);
+
+
+
+
+
 //event section
 //register event
 router.post('/registerEvent',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlEvent.registerEvent);

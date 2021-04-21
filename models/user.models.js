@@ -39,10 +39,10 @@ var userSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"Admin"
     }],
-    disLike:{
-        type:Number,
-        default:0
-    }
+    disLike:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Admin"
+    }]
 });
 
 userSchema.path('email').validate((val)=>{

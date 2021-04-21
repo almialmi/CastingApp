@@ -1,4 +1,5 @@
 const User = require('../models/user.models');
+const Request = require('../models/request.models');
 const Admin = require('../models/admin.models');
 const multer = require('multer');
 
@@ -208,39 +209,185 @@ module.exports.deleteUser= (req,res)=>{
 }
 
 module.exports.updateLike =(req,res)=>{
-  User.findById(req.params.id, function (err, user) {
-    if (err) {
-        console.log(err);
-    } else {
-        user.like += 1;
-        user.save();
-        console.log(user.like);
-        res.send({
-            likeCount: user.like,
-            message:"Like Update Successfully !!"
-        }); 
-    }
-});
+   User.findOne({_id:req.params.id},(err,user)=>{
+       if(err){
+           res.send({error:err})
+       }else{
+            if(user.like.indexOf(req.body.like) !== -1){
+                console.log('exist')
+                User.findByIdAndUpdate(req.params.id,{
+                    $pull:{
+                        like:req.body.like
+                    }
+                },{new:true}).exec((err,result)=>{
+                    if(err){
+                        return res.status(422).json({error:err})
+                    }
+                    else{
+                        res.send({
+                            nomberOfLike : result.like.length
+                        })
+                    }
+                })
 
-User.findByIdAndUpdate(req.params.id,{
-    $push:{like:req.body.like}
-})
+            }else{
+                User.findByIdAndUpdate(req.params.id,{
+                    $push:{
+                        like:req.body.like
+                    }
+                },{new:true}).exec((err,result)=>{
+                    if(err){
+                        return res.status(422).json({error:err})
+                    }
+                    else{
+                        res.send({
+                            nomberOfLike : result.like.length
+                        })
+                    }
+                })
+        }
+           
+       }
+
+
+    })
+        
 
 }
 
 module.exports.updateDisLike =(req,res)=>{
-    User.findById(req.params.id, function (err, user) {
-        if (err) {
-            console.log(err);
-        } else {
-            user.disLike += 1;
-            user.save();
-            console.log(user.disLike);
-            res.send({
-                likeCount: user.disLike,
-                message:"DisLike Update Successfully !!"
-            }); 
+    User.findOne({_id:req.params.id},(err,user)=>{
+        if(err){
+            res.send({error:err})
+        }else{
+             if(user.like.indexOf(req.body.disLike) !== -1){
+                 console.log('exist')
+                 User.findByIdAndUpdate(req.params.id,{
+                     $pull:{
+                        disLike:req.body.disLike
+                     }
+                 },{new:true}).exec((err,result)=>{
+                     if(err){
+                         return res.status(422).json({error:err})
+                     }
+                     else{
+                         res.send({
+                             nomberOfDislike : result.disLike.length
+                         })
+                     }
+                 })
+ 
+             }else{
+                 User.findByIdAndUpdate(req.params.id,{
+                     $push:{
+                        disLike:req.body.disLike
+                     }
+                 },{new:true}).exec((err,result)=>{
+                     if(err){
+                         return res.status(422).json({error:err})
+                     }
+                     else{
+                         res.send({
+                             nomberOfDisike : result.disLike.length
+                         })
+                     }
+                 })
+         }
+            
         }
-    });
+ })
 
+}
+
+// create request a user for work
+
+module.exports.createRequest=(req,res,next)=>{
+    var request = new Request({
+        description:req.body.description,
+        applyer:req.body.applyer,
+        requestedUser:req.body.requestedUser
+    });
+    request.save((err,cat)=>{
+        if(!err)
+            res.status(201).send(cat);
+        else{
+            if(err)
+                res.status(422).send(err);
+            else
+                return next(err);    
+        }
+            
+    });
+     
+}
+
+
+// approve for request
+module.exports.acceptRequests = async(req,res)=>{
+     /*console.log(req.body.isApprove);
+     const isApprove = !req.body.isApprove
+     console.log(isApprove)*/
+     await Request.findByIdAndUpdate(req.params.id,{
+       $set:{
+        isApprove:req.body.isApprove
+       }  
+     }, {new: true})
+     .then(requ => {
+         if(!requ) {
+             return res.status(404).send({
+                 message: "Request not found with this " + req.params.id
+             });
+         }
+         res.send({
+                message:"Request Approve Successfully Come to office and talk to us!!"
+         });
+     }).catch(err => {
+         if(err.kind === 'ObjectId') {
+             return res.status(404).send({
+                 message: "Request not found with this " + req.params.id
+             });                
+         }
+         return res.status(500).send({
+             message: "Error updating Request with id " + req.params.id
+         });
+   });
+
+}
+
+//show requests
+module.exports.showRequests= async(req,res)=>{
+
+    try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.size);
+       
+        const offset = page ? page * limit : 0;
+    
+        console.log("offset = " + offset);    
+    
+        let result = {};
+        let numOfStaffs;
+
+        
+        numOfStaffs = await Request.countDocuments({});
+        result = await Request.find({__v:0}) 
+                              .populate('applyer','requestedUser')
+                              .skip(offset) 
+                              .limit(limit); 
+          
+        const response = {
+          "totalItems": numOfStaffs,
+          "totalPages": Math.ceil(result.length / limit),
+          "pageNumber": page,
+          "pageSize": result.length,
+          "Users": result
+        };
+    
+        res.status(200).json(response);
+      } catch (error) {
+        res.status(500).send({
+          message: "Error -> Can NOT complete a paging request!",
+          error: error.message,
+        });
+      }
 }
