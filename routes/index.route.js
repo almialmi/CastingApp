@@ -49,7 +49,15 @@ router.get('/fetchAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdm
 router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.userRegister);
 
 //fetch user 
-router.get('/fetchUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUser);
+//router.get('/fetchUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUser);
+
+//fetch based on category and gender
+
+// male
+router.get('/fetchMaleUser/:category',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUserMale);
+
+// female 
+router.get('/fetchFemaleUser/:category',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUserFemale);
 
 //update user
 router.put('/updateUser/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateUser);
@@ -63,15 +71,15 @@ router.put('/updateLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctr
 //update Dislike
 router.put('/updateDisLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateDisLike);
 
-//Request section
+//Request section 
 //create requests
-router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.createRequest);
+router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.createRequest);
 
 //show requests
-router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.showRequests);
+router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.showRequests);
 
 //approve
-router.put('/approveRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.acceptRequests);
+router.put('/approveRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.acceptRequests);
 
 
 

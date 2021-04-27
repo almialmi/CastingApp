@@ -1,6 +1,4 @@
 const User = require('../models/user.models');
-const Request = require('../models/request.models');
-const Admin = require('../models/admin.models');
 const multer = require('multer');
 
 global.__basedir = __dirname;
@@ -73,16 +71,7 @@ module.exports.userRegister = (req,res)=>{
  }}});
 }
 
-module.exports.fetchUser = async(req,res)=>{
-  /*  User.find({__v:0}).populate('category')
-                      .exec((err,result)=>{
-                       if(err){
-                          res.send(err)
-                       }else{
-                         res.send(result)
-                     }
-                });*/
-
+/*module.exports.fetchUser = async(req,res)=>{
      try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.size);
@@ -118,7 +107,9 @@ module.exports.fetchUser = async(req,res)=>{
       }
      
 
-}
+}*/
+
+//update but some issue 
 
 module.exports.updateUser =(req,res)=>{
   
@@ -126,9 +117,6 @@ module.exports.updateUser =(req,res)=>{
         if(err){
             console.log(err)
         } else {
-            //console.log(req.files[0].filename)
-            //console.log(req.file)
-
             if(req.files == undefined){
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
@@ -299,95 +287,88 @@ module.exports.updateDisLike =(req,res)=>{
 
 }
 
-// create request a user for work
+//fetch user based on category and gender
 
-module.exports.createRequest=(req,res,next)=>{
-    var request = new Request({
-        description:req.body.description,
-        applyer:req.body.applyer,
-        requestedUser:req.body.requestedUser
-    });
-    request.save((err,cat)=>{
-        if(!err)
-            res.status(201).send(cat);
-        else{
-            if(err)
-                res.status(422).send(err);
-            else
-                return next(err);    
-        }
-            
-    });
-     
-}
-
-
-// approve for request
-module.exports.acceptRequests = async(req,res)=>{
-     /*console.log(req.body.isApprove);
-     const isApprove = !req.body.isApprove
-     console.log(isApprove)*/
-     await Request.findByIdAndUpdate(req.params.id,{
-       $set:{
-        isApprove:req.body.isApprove
-       }  
-     }, {new: true})
-     .then(requ => {
-         if(!requ) {
-             return res.status(404).send({
-                 message: "Request not found with this " + req.params.id
-             });
-         }
-         res.send({
-                message:"Request Approve Successfully Come to office and talk to us!!"
-         });
-     }).catch(err => {
-         if(err.kind === 'ObjectId') {
-             return res.status(404).send({
-                 message: "Request not found with this " + req.params.id
-             });                
-         }
-         return res.status(500).send({
-             message: "Error updating Request with id " + req.params.id
-         });
-   });
-
-}
-
-//show requests
-module.exports.showRequests= async(req,res)=>{
-
+// male user 
+module.exports.fetchUserMale = async(req,res)=>{
     try {
-        let page = parseInt(req.query.page);
-        let limit = parseInt(req.query.size);
-       
-        const offset = page ? page * limit : 0;
-    
-        console.log("offset = " + offset);    
-    
-        let result = {};
-        let numOfStaffs;
+       let page = parseInt(req.query.page);
+       let limit = parseInt(req.query.size);
+      
+       const offset = page ? page * limit : 0;
+   
+       console.log("offset = " + offset);    
+   
+       let result = {};
+       let numOfStaffs;
+       let category = req.params.category;
+       let gender = "male";
 
-        
-        numOfStaffs = await Request.countDocuments({});
-        result = await Request.find({__v:0}) 
-                              .populate('applyer','requestedUser')
-                              .skip(offset) 
-                              .limit(limit); 
-          
-        const response = {
-          "totalItems": numOfStaffs,
-          "totalPages": Math.ceil(result.length / limit),
-          "pageNumber": page,
-          "pageSize": result.length,
-          "Users": result
-        };
+       
+       numOfStaffs = await User.countDocuments({});
+       result = await User.find({category:category,gender:gender},{__v:0}) 
+                             .populate('category')
+                             .skip(offset) 
+                             .limit(limit); 
+         
+       const response = {
+         "totalItems": numOfStaffs,
+         "totalPages": Math.ceil(result.length / limit),
+         "pageNumber": page,
+         "pageSize": result.length,
+         "maleUsers": result
+       };
+   
+       res.status(200).json(response);
+     } catch (error) {
+       res.status(500).send({
+         message: "Error -> Can NOT complete a paging request!",
+         error: error.message,
+       });
+     }
     
-        res.status(200).json(response);
-      } catch (error) {
-        res.status(500).send({
-          message: "Error -> Can NOT complete a paging request!",
-          error: error.message,
-        });
-      }
+
 }
+
+//female user
+
+module.exports.fetchUserFemale= async(req,res)=>{
+    try {
+       let page = parseInt(req.query.page);
+       let limit = parseInt(req.query.size);
+      
+       const offset = page ? page * limit : 0;
+   
+       console.log("offset = " + offset);    
+   
+       let result = {};
+       let numOfStaffs;
+       let category = req.params.category;
+       let gender = "female";
+
+       
+       numOfStaffs = await User.countDocuments({});
+       result = await User.find({category:category,gender:gender},{__v:0}) 
+                             .populate('category')
+                             .skip(offset) 
+                             .limit(limit); 
+         
+       const response = {
+         "totalItems": numOfStaffs,
+         "totalPages": Math.ceil(result.length / limit),
+         "pageNumber": page,
+         "pageSize": result.length,
+         "femaleUsers": result
+       };
+   
+       res.status(200).json(response);
+     } catch (error) {
+       res.status(500).send({
+         message: "Error -> Can NOT complete a paging request!",
+         error: error.message,
+       });
+     }
+    
+
+}
+
