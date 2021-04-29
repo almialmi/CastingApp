@@ -317,4 +317,23 @@ module.exports.acceptRequests = async(req,res)=>{
 
 }
 
-
+module.exports.deleteRequests =(req,res)=>{
+    Request.findByIdAndRemove(req.params.id)
+    .then(reqs => {
+        if(!reqs) {
+            return res.status(404).send({
+                message: "Request not found with id " + req.params.id
+            });
+        }
+        res.send({message: "Request deleted successfully!"});
+    }).catch(err => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return res.status(404).send({
+                message: "Request found with id " + req.params.id
+            });                
+        }
+        return res.status(500).send({
+            message: "Could not delete Request with id " + req.params.id
+        });
+    });
+}

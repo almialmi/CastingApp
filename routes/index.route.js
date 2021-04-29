@@ -76,14 +76,17 @@ router.put('/updateDisLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,
 router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.createRequest);
 
 // show own request
-router.get('/fetchOwnRequest/:applyer',ctrlAdmin.showOwnRequests);
+router.get('/fetchOwnRequest/:applyer',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.showOwnRequests);
 
 //show requests
 router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.showRequests);
 
+// delete created request 
+
+router.delete('/deleteRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.deleteRequests);
 
 //approve
-router.put('/approveRequest/:id',ctrlAdmin.acceptRequests);
+router.put('/approveRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.acceptRequests);
 
 
 
