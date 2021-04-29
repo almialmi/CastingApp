@@ -212,7 +212,48 @@ module.exports.createRequest=(req,res,next)=>{
      
 }
 
-//show requests
+// show there own created request for normal user
+module.exports.showOwnRequests= async(req,res)=>{
+
+    try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.size);
+       
+        const offset = page ? page * limit : 0;
+    
+        console.log("offset = " + offset);    
+    
+        let result = {};
+        let numOfStaffs;
+        let applyer = req.params.applyer;
+        console.log(applyer);
+        
+        numOfStaffs = await Request.countDocuments({});
+        result = await Request.find({applyer:applyer},{__v:0}) 
+                              .populate('applyer')
+                              .populate('requestedUser')
+                              .skip(offset) 
+                              .limit(limit); 
+          
+        const response = {
+          "totalItems": numOfStaffs,
+          "totalPages": Math.ceil(result.length / limit),
+          "pageNumber": page,
+          "pageSize": result.length,
+          "Request": result
+        };
+    
+        res.status(200).json(response);
+      } catch (error) {
+        res.status(500).send({
+          message: "Error -> Can NOT complete a paging request!",
+          error: error.message,
+        });
+      }
+}
+
+
+//show requests for admin
 module.exports.showRequests= async(req,res)=>{
 
     try {
@@ -254,30 +295,6 @@ module.exports.showRequests= async(req,res)=>{
 // approve for request need notification...
 
 module.exports.acceptRequests = async(req,res)=>{
-    /*await Request.findByIdAndUpdate(req.params.id,{
-      $set:{
-       isApprove:req.body.isApprove
-      }  
-    }, {new: true})
-    .then(requ => {
-        if(!requ) {
-            return res.status(404).send({
-                message: "Request not found with this " + req.params.id
-            });
-        }
-        res.send({
-               message:"Request Approve Successfully Come to office and talk to us!!"
-        });
-    }).catch(err => {
-        if(err.kind === 'ObjectId') {
-            return res.status(404).send({
-                message: "Request not found with this " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Error updating Request with id " + req.params.id
-        });
-  });*/
 
    Request.findByIdAndUpdate(req.params.id,{$set:{isApprove:req.body.isApprove}},(err, accept) => {
        if(err){
@@ -292,7 +309,7 @@ module.exports.acceptRequests = async(req,res)=>{
             useTLS: process.env.PUSHER_APP_USETLS
         });
         pusher.trigger('notifications', 'request_accepted', accept, req.headers['x-socket-id'],{
-            message: "hello world"
+            message: "Come to office and talk to us..."
         });
         res.send("done");
 

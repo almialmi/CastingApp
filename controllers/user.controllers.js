@@ -303,6 +303,7 @@ module.exports.fetchUserMale = async(req,res)=>{
        let numOfStaffs;
        let category = req.params.category;
        let gender = "male";
+       console.log(category);
 
        
        numOfStaffs = await User.countDocuments({});

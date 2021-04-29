@@ -75,8 +75,12 @@ router.put('/updateDisLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,
 //create requests
 router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.createRequest);
 
+// show own request
+router.get('/fetchOwnRequest/:applyer',ctrlAdmin.showOwnRequests);
+
 //show requests
 router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.showRequests);
+
 
 //approve
 router.put('/approveRequest/:id',ctrlAdmin.acceptRequests);
