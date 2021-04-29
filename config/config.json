@@ -3,7 +3,12 @@
         "PORT" : 3000,
         "MONGODB_URI" : "mongodb://localhost:27017/CastingApp",
         "JWT_SECRET" : "SECRET#123",
-        "JWT_EXP" : "30m"
+        "JWT_EXP" : "30m",
+        "PUSHER_APP_ID": "1195078",
+        "PUSHER_APP_KEY":"5de832549060dc69b321",
+        "PUSHER_APP_SECRET":"b454caa92086b608dfe4",
+        "PUSHER_APP_CLUSTER":"ap2",
+        "PUSHER_APP_USETLS":true
     },
     "production" :{
         "PORT" : 80,

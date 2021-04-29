@@ -146,7 +146,7 @@ module.exports.updateUser =(req,res)=>{
                         category:req.body.category,
                         video:req.body.video,
                         gender:req.body.gender,
-                        photos:req.files
+                        photos:{data:req.files,contentType:'image/png'}
    
                     }
                 }, {new: true})

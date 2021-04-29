@@ -79,7 +79,7 @@ router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctr
 router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.showRequests);
 
 //approve
-router.put('/approveRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.acceptRequests);
+router.put('/approveRequest/:id',ctrlAdmin.acceptRequests);
 
 
 

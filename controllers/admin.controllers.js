@@ -252,8 +252,9 @@ module.exports.showRequests= async(req,res)=>{
 }
 
 // approve for request need notification...
+
 module.exports.acceptRequests = async(req,res)=>{
-    await Request.findByIdAndUpdate(req.params.id,{
+    /*await Request.findByIdAndUpdate(req.params.id,{
       $set:{
        isApprove:req.body.isApprove
       }  
@@ -276,7 +277,27 @@ module.exports.acceptRequests = async(req,res)=>{
         return res.status(500).send({
             message: "Error updating Request with id " + req.params.id
         });
-  });
+  });*/
+
+   Request.findByIdAndUpdate(req.params.id,{$set:{isApprove:req.body.isApprove}},(err, accept) => {
+       if(err){
+           res.status(422).send({err});
+       }
+       const Pusher = require("pusher");
+       const pusher = new Pusher({
+            appId: process.env.PUSHER_APP_ID,
+            key:   process.env.PUSHER_APP_KEY,
+            secret: process.env.PUSHER_APP_SECRET,
+            cluster: process.env.PUSHER_APP_CLUSTER,
+            useTLS: process.env.PUSHER_APP_USETLS
+        });
+        pusher.trigger('notifications', 'request_accepted', accept, req.headers['x-socket-id'],{
+            message: "hello world"
+        });
+        res.send("done");
+
+    });
 
 }
+
 

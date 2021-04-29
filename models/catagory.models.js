@@ -2,7 +2,11 @@ const mongoose = require('mongoose');
 var catagorySchema = new mongoose.Schema({
     name:{
         type:String,
-        require:true
+        required:true
+    },
+    photo:{
+        data:String,
+        contentType:String
     }
 });
 var Catagory = mongoose.model("Catagory",catagorySchema);
