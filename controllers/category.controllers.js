@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Category = require('../models/catagory.models');
 const multer = require('multer');
+const fs = require('fs');
 
 global.__basedir = __dirname;
 
@@ -114,6 +115,9 @@ module.exports.upadteCategoty= (req,res)=>{
 }
 
 module.exports.deleteCategory=(req,res)=>{
+
+    var filepath= path.resolve(__basedir, '/categoryPhotoStorage/' + req.params.filename);  
+
     Category.findByIdAndRemove(req.params.id)
     .then(cat => {
         if(!cat) {
@@ -132,5 +136,7 @@ module.exports.deleteCategory=(req,res)=>{
             message: "Could not delete Category with id " + req.params.id
         });
     });
+
+    fs.unlinkSync(filepath);
 
 }

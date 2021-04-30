@@ -1,5 +1,6 @@
 const User = require('../models/user.models');
 const multer = require('multer');
+const fs = require('fs');
 
 global.__basedir = __dirname;
 
@@ -175,6 +176,7 @@ module.exports.updateUser =(req,res)=>{
 }
 
 module.exports.deleteUser= (req,res)=>{
+    var filepath= path.resolve(__basedir, '/categoryPhotoStorage/' + req.params.files); 
     User.findByIdAndRemove(req.params.id)
     .then(user => {
         if(!user) {
@@ -193,6 +195,7 @@ module.exports.deleteUser= (req,res)=>{
             message: "Could not delete User with id " + req.params.id
         });
     });
+    fs.unlinkSync(filepath);
 
 }
 

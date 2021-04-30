@@ -296,23 +296,41 @@ module.exports.showRequests= async(req,res)=>{
 
 module.exports.acceptRequests = async(req,res)=>{
 
-   Request.findByIdAndUpdate(req.params.id,{$set:{isApprove:req.body.isApprove}},(err, accept) => {
-       if(err){
-           res.status(422).send({err});
-       }
-       const Pusher = require("pusher");
-       const pusher = new Pusher({
-            appId: process.env.PUSHER_APP_ID,
-            key:   process.env.PUSHER_APP_KEY,
-            secret: process.env.PUSHER_APP_SECRET,
-            cluster: process.env.PUSHER_APP_CLUSTER,
-            useTLS: process.env.PUSHER_APP_USETLS
+    if(!req.body.description && !req.body.applyer && !req.body.requestedUser) {
+        return res.status(400).send({
+            message: " All this contents cann't be empty"
         });
-        pusher.trigger('notifications', 'request_accepted', accept, req.headers['x-socket-id'],{
-            message: "Come to office and talk to us..."
-        });
-        res.send("done");
+    }
+    console.log(req.body.isApprove);
+    const isApprove = !req.body.isApprove
+    console.log(isApprove)
 
+    await Request.findByIdAndUpdate(req.params.id, {
+        $set:{
+            isApprove:isApprove
+
+        }
+        
+    }, {new: true})
+    .then(reque => {
+        if(!reque) {
+            return res.status(404).send({
+                message: "Request not found with id " + req.params.id
+            });
+        }
+        res.status(200).send({
+            message:"Request Approve successfully",
+            success:true
+        });
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "Request not found with id " + req.params.id
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating Request with id " + req.params.id
+        });
     });
 
 }
