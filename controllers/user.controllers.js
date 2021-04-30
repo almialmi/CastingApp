@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 
 const uploadStorage = multer({storage:storage,
     fileFilter : function(req, file, callback) { //file filter
-    if (['png'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
+    if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
         return callback(new Error('Wrong extension type'));
     }
     callback(null, true);
@@ -176,7 +176,7 @@ module.exports.updateUser =(req,res)=>{
 }
 
 module.exports.deleteUser= (req,res)=>{
-    var filepath= path.resolve(__basedir, '/categoryPhotoStorage/' + req.params.files); 
+    var filepath= path.resolve(__basedir, '/usersPhotoStorage/' + req.params.files); 
     User.findByIdAndRemove(req.params.id)
     .then(user => {
         if(!user) {

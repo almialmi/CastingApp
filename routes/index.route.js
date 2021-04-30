@@ -94,19 +94,19 @@ router.put('/approveRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate
 
 //event section
 //register event
-router.post('/registerEvent',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlEvent.registerEvent);
+router.post('/registerEvent',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.registerEvent);
 
 //show events
-router.get('/showEvents',ctrlEvent.showEvents);
+router.get('/showEvents',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showEvents);
 
 //update events
-router.put('/updateEvents/:id',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlEvent.updateEvent);
+router.put('/updateEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.updateEvent);
 
 //delete events
-router.delete('/deleteEvents/:id',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlEvent.deleteEvent);
+router.delete('/deleteEvent/:id/:filename',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.deleteEvent);
 
 //show remainig time and tell closed or expired date
-router.get('/showRemaingTimeAndExpiredDate',ctrlEvent.showRemainingTimeAndExpried);
+router.get('/showRemaingTimeAndExpiredDate/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showRemainingTimeAndExpried);
 
 
 //computation post section

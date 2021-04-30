@@ -15,7 +15,7 @@ var eventSchema = new mongoose.Schema({
     },
     photo:{
         data:String,
-        ContentType:String
+        contentType:String
     },
     startDate:{
         type:Date,
