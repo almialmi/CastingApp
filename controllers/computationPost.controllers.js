@@ -1,110 +1,153 @@
 const ComputationPost = require('../models/computationPost.models');
-const multer = require('multer');
-const EventForComputation = require('../models/event.models');
-const { post } = require('../routes/index.route');
-
-global.__basedir = __dirname;
-
-//multer upload storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, __basedir + '/computationPostStorage/')
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
-    }
-
-});
-
-const uploadStorage = multer({storage:storage,
-    fileFilter : function(req, file, callback) { //file filter
-    if (['mp4'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
-        return callback(new Error('Wrong extension type'));
-    }
-    callback(null, true);
-}}).single('video');
 
 
-module.exports.addPost =(req,res,next)=>{
-    uploadStorage(req, res, (err) => {
-        if(err){
-            console.log(err)
-        } else {
-
-            if(req.file == undefined){
-
-                res.status(404).json({ success: false, msg: 'File is undefined!',file: `computationPostStorage/${req.file.filename}`})
-
-            } else {
-              
-               // console.log(req.file.path);
-               var computationPost = new ComputationPost();
-                computationPost.user = req.body.user;
-                computationPost.eventForComputation = req.body.eventForComputation;
-                computationPost.like = req.body.like;
-                computationPost.video.data=req.file.filename;
-                computationPost.video.contentType='video/mp4';
-
-                //console.log(__basedir + '/uploads/' + req.file.filename);
-                computationPost.save((err,doc)=>{
-                    //console.log(doc);
-                    if(!err)
-                      res.send(201,doc);
-                    else{
-                        if(err)
-                           res.status(422).send(err);
-                        else
-                           return next(err);    
-                    }
+module.exports.addComputationPost =(req,res,next)=>{
+    var post = new ComputationPost({
+        user:req.body.user,
+        eventForComputation:req.body.eventForComputation,
+        video:req.body.video
+    });
+    post.save((err,cat)=>{
+        if(!err)
+            res.status(201).send(cat);
+        else{
+            if(err)
+                res.status(422).send(err);
+            else
+                return next(err);    
+        }
             
     });
-
- }}});
-
+   
 }
-module.exports.showPosts=async(req,res)=>{
-    ComputationPost.find({__v:0})
-                   .populate('eventForComputation')
-                   .populate('user')
-                   .exec((err,result)=>{
-                       if(err){
-                          res.send(err)
-                       }else{
-                         res.send(result)
+module.exports.showComputationPosts=async(req,res)=>{
+    try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.size);
+       
+        const offset = page ? page * limit : 0;
+    
+        console.log("offset = " + offset);    
+    
+        let result = {};
+        let numOfStaffs;
+
+        
+        numOfStaffs = await ComputationPost.countDocuments({});
+        result = await ComputationPost.find({__v:0}) 
+                              .populate('user')
+                              .populate('eventForComputation')
+                              .skip(offset) 
+                              .limit(limit); 
+          
+        const response = {
+          "totalItems": numOfStaffs,
+          "totalPages": Math.ceil(result.length / limit),
+          "pageNumber": page,
+          "pageSize": result.length,
+          "COmputationPosts": result
+        };
+    
+        res.status(200).json(response);
+      } catch (error) {
+        res.status(500).send({
+          message: "Error -> Can NOT complete a paging request!",
+          error: error.message,
+        });
+      }
+     
+}
+
+
+module.exports.updateNumberOfLikes = async(req,res)=>{
+    ComputationPost.findOne({_id:req.params.id},(err,comp)=>{
+        if(err){
+            res.send({error:err})
+        }else{
+             if(comp.like.indexOf(req.body.like) !== -1){
+                 console.log('exist')
+                 ComputationPost.findByIdAndUpdate(req.params.id,{
+                     $pull:{
+                         like:req.body.like
                      }
-                });
-}
-
-
-module.exports.updateLikes = async(req,res)=>{
-     console.log(req.body.like);
-     const numberOfLike = req.body.like + 1; 
-     console.log(numberOfLike);
-     await ComputationPost.findByIdAndUpdate(req.params.id,{
-       $set:{
-          like:numberOfLike
+                 },{new:true}).exec((err,result)=>{
+                     if(err){
+                         return res.status(422).json({error:err})
+                     }
+                     else{
+                         res.send({
+                             nomberOfLike : result.like.length
+                         })
+                     }
+                 })
  
-       }  
-     }, {new: true})
-     .then(pos => {
-         if(!pos) {
-             return res.status(404).send({
-                 message: "Post not found with this " + req.params.id
-             });
+             }else{
+                 ComputationPost.findByIdAndUpdate(req.params.id,{
+                     $push:{
+                         like:req.body.like
+                     }
+                 },{new:true}).exec((err,result)=>{
+                     if(err){
+                         return res.status(422).json({error:err})
+                     }
+                     else{
+                         res.send({
+                             nomberOfLike : result.like.length
+                         })
+                     }
+                 })
          }
-         res.send({
-                message:"like increased by one"
-         });
-     }).catch(err => {
-         if(err.kind === 'ObjectId') {
-             return res.status(404).send({
-                 message: "Post not found with this " + req.params.id
-             });                
+            
+        }
+ 
+ 
+     })
+    
+
+}
+//update number of dis like
+module.exports.updateNumberOfDisLikes = async(req,res)=>{
+    ComputationPost.findOne({_id:req.params.id},(err,comp)=>{
+        if(err){
+            res.send({error:err})
+        }else{
+             if(comp.disLike.indexOf(req.body.disLike) !== -1){
+                 console.log('exist')
+                 ComputationPost.findByIdAndUpdate(req.params.id,{
+                     $pull:{
+                        disLike:req.body.disLike
+                     }
+                 },{new:true}).exec((err,result)=>{
+                     if(err){
+                         return res.status(422).json({error:err})
+                     }
+                     else{
+                         res.send({
+                             nomberOfDislike : result.disLike.length
+                         })
+                     }
+                 })
+ 
+             }else{
+                 ComputationPost.findByIdAndUpdate(req.params.id,{
+                     $push:{
+                        disLike:req.body.disLike
+                     }
+                 },{new:true}).exec((err,result)=>{
+                     if(err){
+                         return res.status(422).json({error:err})
+                     }
+                     else{
+                         res.send({
+                             nomberOfDisike : result.disLike.length
+                         })
+                     }
+                 })
          }
-         return res.status(500).send({
-             message: "Error like this viedo with id " + req.params.id
-         });
-   });
+            
+        }
+ })
+    
 
 }
 
@@ -131,11 +174,7 @@ module.exports.deletePost =(req,res)=>{
 }
 
 module.exports.fillJugePoints =(req,res)=>{
-    if(!req.body.user && !req.body.eventForComputation && !req.body.video && !req.body.like) {
-        return res.status(400).send({
-            message: " All this contents cann't be empty"
-        });
-    }
+   
     ComputationPost.findByIdAndUpdate(req.params.id, {
         $set:{
             jugePoints:req.body.jugePoints
@@ -149,7 +188,7 @@ module.exports.fillJugePoints =(req,res)=>{
             });
         }
         res.status(200).send({
-            message:"successfully update post",
+            message:"point update:" + " " + req.body.jugePoints,
             success:true
         });
     }).catch(err => {
@@ -170,11 +209,15 @@ module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
     const sort = { like:-1,jugePoints:-1};
     ComputationPost.find()
                    .sort(sort)
-                   .toArray((err,result)=>{
+                   .populate('user')
+                   .populate('eventForComputation')
+                   .exec((err,result)=>{
                         if(err){
                              res.send(err)
                         }else{
-                             res.send(result)
+                             res.status(200).send({
+                                 message:result
+                             })
                     }
  });    
 }
@@ -184,12 +227,16 @@ module.exports.notifyBestThreeWinners =(req,res)=>{
     const limit = 3;
     ComputationPost.find()
                    .sort(sort)
+                   .populate('user')
+                   .populate('eventForComputation')
                    .limit(limit)
-                   .toArray((err,result)=>{
+                   .exec((err,result)=>{
                         if(err){
                              res.send(err)
                         }else{
-                             res.send(result)
+                             res.status(200).send({
+                                 message:result
+                             })
                     }
  });   
 

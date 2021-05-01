@@ -109,25 +109,28 @@ router.get('/showRemaingTimeAndExpiredDate/:id',jwtHelper.verifyJwtToken,ctrlAdm
 
 //computation post section
 //register comput posts
-router.post('/registerComputationPost',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlComputPost.addPost);
+router.post('/registerComputationPost',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.addComputationPost);
 
 //show posts
-router.get('/showPosts',ctrlComputPost.showPosts);
+router.get('/showComputationPosts',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.showComputationPosts);
 
 //update like when it clicks
-router.put('/updateLikes/:id',ctrlComputPost.updateLikes);
+router.put('/updateNumberOfLikes/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.updateNumberOfLikes);
+
+//update number of dis like
+router.put('/updateNumberOfDisLikes/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.updateNumberOfDisLikes);
 
 //to delete posts
-router.delete('/deletePosts/:id',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlComputPost.deletePost);
+router.delete('/deleteComputationPost/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.deletePost);
 
 //fill juge points
-router.put('/fillJugePoints/:id',ctrlAdmin.Authenticate,jwtHelper.verifyJwtToken,ctrlComputPost.fillJugePoints);
+router.put('/fillJugePoints/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.fillJugePoints);
 
 //to show posts based on number of likes and juge points
-router.get('/higherToLowerLikes',ctrlComputPost.orderByHighestLikeToTheEvent);
+router.get('/higherToLowerLikes',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.orderByHighestLikeToTheEvent);
 
 //show best 3 winners
-router.get('/showBestThreeWinners',ctrlComputPost.notifyBestThreeWinners);
+router.get('/showBestThreeWinners',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.notifyBestThreeWinners);
 
 //user section
 

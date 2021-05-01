@@ -10,14 +10,17 @@ var computationsSchema = new mongoose.Schema({
         ref:"EventForComputation"
     },
     video:{
-        data:String,
-        contentType:String
-
+        type:String,
+        required:true
     },
-    like:{
-        type:Number,
-        default:0
-    },
+    like:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Admin"
+    }],
+    disLike:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Admin"
+    }],
     jugePoints:{
         type:Number,
         default:0

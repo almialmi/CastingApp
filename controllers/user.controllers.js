@@ -251,7 +251,7 @@ module.exports.updateDisLike =(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-             if(user.like.indexOf(req.body.disLike) !== -1){
+             if(user.disLike.indexOf(req.body.disLike) !== -1){
                  console.log('exist')
                  User.findByIdAndUpdate(req.params.id,{
                      $pull:{
