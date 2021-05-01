@@ -24,6 +24,10 @@ var eventSchema = new mongoose.Schema({
     endDate:{
         type:Date,
         required:true
+    },
+    closed:{
+        type:Boolean,
+        default:false
     }
 });
 

@@ -54,10 +54,8 @@ router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrl
 //fetch based on category and gender
 
 // male
-router.get('/fetchMaleUser/:category',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUserMale);
+router.get('/fetchMaleAndFemaleUser/:category/:gender',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUserMaleAndFemale);
 
-// female 
-router.get('/fetchFemaleUser/:category',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUserFemale);
 
 //update user
 router.put('/updateUser/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateUser);
@@ -97,7 +95,7 @@ router.put('/approveRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate
 router.post('/registerEvent',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.registerEvent);
 
 //show events
-router.get('/showEvents',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showEvents);
+router.get('/showEvents/:closed',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showEvents);
 
 //update events
 router.put('/updateEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.updateEvent);

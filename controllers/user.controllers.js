@@ -291,9 +291,8 @@ module.exports.updateDisLike =(req,res)=>{
 }
 
 //fetch user based on category and gender
-
-// male user 
-module.exports.fetchUserMale = async(req,res)=>{
+// male user and female user 
+module.exports.fetchUserMaleAndFemale= async(req,res)=>{
     try {
        let page = parseInt(req.query.page);
        let limit = parseInt(req.query.size);
@@ -305,7 +304,7 @@ module.exports.fetchUserMale = async(req,res)=>{
        let result = {};
        let numOfStaffs;
        let category = req.params.category;
-       let gender = "male";
+       let gender = req.params.gender;
        console.log(category);
 
        
@@ -320,7 +319,7 @@ module.exports.fetchUserMale = async(req,res)=>{
          "totalPages": Math.ceil(result.length / limit),
          "pageNumber": page,
          "pageSize": result.length,
-         "maleUsers": result
+         "Users": result
        };
    
        res.status(200).json(response);
@@ -334,45 +333,5 @@ module.exports.fetchUserMale = async(req,res)=>{
 
 }
 
-//female user
 
-module.exports.fetchUserFemale= async(req,res)=>{
-    try {
-       let page = parseInt(req.query.page);
-       let limit = parseInt(req.query.size);
-      
-       const offset = page ? page * limit : 0;
-   
-       console.log("offset = " + offset);    
-   
-       let result = {};
-       let numOfStaffs;
-       let category = req.params.category;
-       let gender = "female";
-
-       
-       numOfStaffs = await User.countDocuments({});
-       result = await User.find({category:category,gender:gender},{__v:0}) 
-                             .populate('category')
-                             .skip(offset) 
-                             .limit(limit); 
-         
-       const response = {
-         "totalItems": numOfStaffs,
-         "totalPages": Math.ceil(result.length / limit),
-         "pageNumber": page,
-         "pageSize": result.length,
-         "femaleUsers": result
-       };
-   
-       res.status(200).json(response);
-     } catch (error) {
-       res.status(500).send({
-         message: "Error -> Can NOT complete a paging request!",
-         error: error.message,
-       });
-     }
-    
-
-}
 

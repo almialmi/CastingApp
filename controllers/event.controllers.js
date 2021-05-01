@@ -63,14 +63,43 @@ module.exports.registerEvent =(req,res,next)=>{
  }}});
 }
 
-module.exports.showEvents=(req,res)=>{
-    EventForComputation.find({__v:0},(err,result)=>{
-        if(err){
-            res.send(err)
-        }else{
-            res.send(result)
-        }
-    });
+//show events that are closed and panding
+module.exports.showEvents= async(req,res)=>{
+    try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.size);
+       
+        const offset = page ? page * limit : 0;
+    
+        console.log("offset = " + offset);    
+    
+        let result = {};
+        let numOfStaffs;
+        let closed = req.params.closed;
+        
+ 
+        
+        numOfStaffs = await EventForComputation.countDocuments({});
+        result = await EventForComputation.find({closed:closed},{__v:0}) 
+                              .populate('category')
+                              .skip(offset) 
+                              .limit(limit); 
+          
+        const response = {
+          "totalItems": numOfStaffs,
+          "totalPages": Math.ceil(result.length / limit),
+          "pageNumber": page,
+          "pageSize": result.length,
+          "Events": result
+        };
+    
+        res.status(200).json(response);
+      } catch (error) {
+        res.status(500).send({
+          message: "Error -> Can NOT complete a paging request!",
+          error: error.message,
+        });
+      }
 
 }
 
@@ -176,9 +205,30 @@ module.exports.showRemainingTimeAndExpried= (req,res)=>{
     var interval = setInterval(intervalFunc,1000);
     if(remain < 0){
         clearInterval(interval)
-        return res.status(200).send({
-            message: "Event closed !!"
-        });
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+                $set:{
+                    closed:true
+                }  
+            }, {new: true})
+            .then(eve => {
+                if(!eve) {
+                    return res.status(404).send({
+                        message: "Event not found with this " + req.params.id
+                    });
+                }
+                res.send({
+                        message:"Event is Closed !!"
+                });
+            }).catch(err => {
+                if(err.kind === 'ObjectId') {
+                    return res.status(404).send({
+                        message: "Event not found with this " + req.params.id
+                    });                
+                }
+                return res.status(500).send({
+                    message: "Error closing the event with id " + req.params.id
+                });
+            });
 
     }else{
         interval;
