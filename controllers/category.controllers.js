@@ -116,7 +116,7 @@ module.exports.upadteCategoty= (req,res)=>{
 
 module.exports.deleteCategory=(req,res)=>{
 
-    var filepath= path.resolve(__basedir, '/categoryPhotoStorage/' + req.params.filename);  
+    var filepath= path.resolve(__basedir, './categoryPhotoStorage/' + req.params.filename);  
 
     Category.findByIdAndRemove(req.params.id)
     .then(cat => {

@@ -1,6 +1,7 @@
 const EventForComputation = require('../models/event.models');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
 
 global.__basedir = __dirname;
@@ -155,7 +156,7 @@ module.exports.updateEvent =(req,res)=>{
 }
 module.exports.deleteEvent=(req,res)=>{
    
-    var filepath= path.resolve(__basedir, '/eventPhotoStorage/' + req.params.filename);  
+    var filepath= path.resolve(__basedir, './eventPhotoStorage/' + req.params.filename);  
 
     EventForComputation.findByIdAndRemove(req.params.id)
     .then(eve => {

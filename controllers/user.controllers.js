@@ -176,7 +176,7 @@ module.exports.updateUser =(req,res)=>{
 }
 
 module.exports.deleteUser= (req,res)=>{
-    var filepath= path.resolve(__basedir, '/usersPhotoStorage/' + req.params.files); 
+    var filepath= path.resolve(__basedir, './usersPhotoStorage/' + req.params.files); 
     User.findByIdAndRemove(req.params.id)
     .then(user => {
         if(!user) {
