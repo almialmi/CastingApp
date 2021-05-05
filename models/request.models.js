@@ -13,9 +13,18 @@ var requestSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     },
-    isApprove:{
-        type:Boolean,
-        default:false
+    approve:{
+        type:String,
+        default:"Pending",
+        enum: ["Accept", "Reject","Pending"]
+    },
+    duration:{
+        type:Number,
+        required:true
+    },
+    dateForWork:{
+        type:Date,
+        required:true
     }
 });
 

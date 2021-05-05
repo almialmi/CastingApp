@@ -84,8 +84,10 @@ router.get('/showRequests',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlA
 router.delete('/deleteRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.deleteRequests);
 
 //approve
-router.put('/approveRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.acceptRequests);
+router.put('/approveOrRejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.acceptOrRejectRequests);
 
+//reject
+//router.put('/rejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.rejectRequests);
 
 
 

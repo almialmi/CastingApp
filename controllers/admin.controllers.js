@@ -193,10 +193,13 @@ module.exports.Authenticate = passport.authenticate('jwt',{session:false});
 
 // create request a user for work
 module.exports.createRequest=(req,res,next)=>{
+    var dateForWork = new Date(req.body.dateForWork);
     var request = new Request({
         description:req.body.description,
         applyer:req.body.applyer,
-        requestedUser:req.body.requestedUser
+        requestedUser:req.body.requestedUser,
+        duration:req.body.duration,
+        dateForWork:dateForWork
     });
     request.save((err,cat)=>{
         if(!err)
@@ -294,21 +297,16 @@ module.exports.showRequests= async(req,res)=>{
 
 // approve for request need notification...
 
-module.exports.acceptRequests = async(req,res)=>{
+module.exports.acceptOrRejectRequests = async(req,res)=>{
 
     if(!req.body.description && !req.body.applyer && !req.body.requestedUser) {
         return res.status(400).send({
             message: " All this contents cann't be empty"
         });
     }
-    console.log(req.body.isApprove);
-    const isApprove = !req.body.isApprove
-    console.log(isApprove)
-
     await Request.findByIdAndUpdate(req.params.id, {
         $set:{
-            isApprove:isApprove
-
+            approve:req.body.approve
         }
         
     }, {new: true})
@@ -319,7 +317,7 @@ module.exports.acceptRequests = async(req,res)=>{
             });
         }
         res.status(200).send({
-            message:"Request Approve successfully",
+            message:"Request Approve/reject successfully",
             success:true
         });
     }).catch(err => {
@@ -334,6 +332,7 @@ module.exports.acceptRequests = async(req,res)=>{
     });
 
 }
+
 
 module.exports.deleteRequests =(req,res)=>{
     Request.findByIdAndRemove(req.params.id)
@@ -355,3 +354,5 @@ module.exports.deleteRequests =(req,res)=>{
         });
     });
 }
+
+
