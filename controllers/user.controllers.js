@@ -72,43 +72,20 @@ module.exports.userRegister = (req,res)=>{
  }}});
 }
 
-/*module.exports.fetchUser = async(req,res)=>{
-     try {
-        let page = parseInt(req.query.page);
-        let limit = parseInt(req.query.size);
-       
-        const offset = page ? page * limit : 0;
-    
-        console.log("offset = " + offset);    
-    
-        let result = {};
-        let numOfStaffs;
+module.exports.fetchAllUser = async(req,res)=>{
+    User.find({__v:0})
+        .populate('category')
+        .exec((err,result)=>{
+            if(err){
+                res.send(err)
+            }else{
+                res.status(200).send({
+                    message:result
+            })
+    }});   
 
-        
-        numOfStaffs = await User.countDocuments({});
-        result = await User.find({__v:0}) 
-                              .populate('category')
-                              .skip(offset) 
-                              .limit(limit); 
-          
-        const response = {
-          "totalItems": numOfStaffs,
-          "totalPages": Math.ceil(result.length / limit),
-          "pageNumber": page,
-          "pageSize": result.length,
-          "Users": result
-        };
-    
-        res.status(200).json(response);
-      } catch (error) {
-        res.status(500).send({
-          message: "Error -> Can NOT complete a paging request!",
-          error: error.message,
-        });
-      }
      
-
-}*/
+}
 
 //update but some issue 
 

@@ -49,7 +49,7 @@ router.get('/fetchAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdm
 router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.userRegister);
 
 //fetch user 
-//router.get('/fetchUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchUser);
+router.get('/fetchAllUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchAllUser);
 
 //fetch based on category and gender
 
