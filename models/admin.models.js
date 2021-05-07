@@ -13,15 +13,24 @@ var adminSchema = new mongoose.Schema({
         required:true,
         unique: true
     },
+    status: {
+        type: String, 
+        enum: ['Pending', 'Active'],
+        default: 'Pending'
+      },
+    confirmationCode: { 
+        type: String, 
+        unique: true 
+    },
     password:{
         type:String,
-        required:true
+        required:true,
+        minlength:8
     },
     role:{
         type:String,
         default:'NormalUser',
         enum: ["NormalUser", "Admin"]
-
     },
     salSecrete: String
 });

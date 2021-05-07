@@ -3,7 +3,9 @@
         "PORT" : 3000,
         "MONGODB_URI" : "mongodb://localhost:27017/CastingApp",
         "JWT_SECRET" : "SECRET#123",
-        "JWT_EXP" : "300m"
+        "JWT_EXP" : "300m",
+        "User":"almialmi61621@gmail.com",
+        "Password":"Cybma12345"
     },
     "production" :{
         "PORT" : 80,

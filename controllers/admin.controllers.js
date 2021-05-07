@@ -1,26 +1,67 @@
 const mongoose = require('mongoose');
+const Reset = require('../models/reset.models');
 const Admin = require('../models/admin.models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const Request = require('../models/request.models');
+const nodemailer = require("nodemailer");
+const crypto = require('crypto');
 
+const user = "almialmi61621@gmail.com";
+const pass = "Cybma12345";
+
+const transport = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    service: "Gmail",
+    port: 465,
+    secure:false,
+    auth: {
+      user: user,
+      pass: pass,
+    },
+  });
+
+const sendConfirmationEmail = (name, email, confirmationCode) => {
+    console.log("Check");
+    transport.sendMail({
+      from: user,
+      to: email,
+      subject: "Please confirm your account",
+      html: `<h1>Email Confirmation</h1>
+          <h2>Hello ${name}</h2>
+          <p>Thank you for Joining us. Please confirm your email by clicking on the following link</p>
+          <a href=http://localhost:4200/verfiyEmail/${confirmationCode}> Click here</a>
+          </div>`,
+    }).catch(err => console.log(err));
+  };
 
 module.exports.adminRegister = (req,res,next)=>{
+    const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
     var admin = new Admin({
         userName:req.body.userName,
         email:req.body.email,
         password:req.body.password,
-        role:"Admin"
+        role:"Admin",
+        confirmationCode: token
 
     });
     
-    admin.save((err,doc)=>{
-        if(!err)
-            res.status(201).send(doc);
+    admin.save((err)=>{
+        if(!err){
+            sendConfirmationEmail(
+                admin.userName,
+                admin.email,
+                admin.confirmationCode
+            );
+            res.send({
+                message:"User was registered successfully! Please check your email"
+            });
+
+        }
         else{
             if(err)
-                res.status(422).send(err.errors.email.message);
+                res.status(422).send(err.message);
             else
                 return next(err);    
         }
@@ -29,25 +70,58 @@ module.exports.adminRegister = (req,res,next)=>{
 }
 
 module.exports.normalUserRegister = (req,res,next)=>{
+    const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
      var admin = new Admin({
          userName:req.body.userName,
          email:req.body.email,
          password:req.body.password,
-         role:"NormalUser"
+         confirmationCode: token
          });
      
-     admin.save((err,doc)=>{
-         if(!err)
-             res.status(201).send(doc);
-         else{
-             if(err)
-                 res.status(422).send(err.errors.email.message);
-             else
-                 return next(err);    
-         }
+     admin.save((err)=>{
+        if(!err){
+            res.send({
+                message:
+                   "User was registered successfully! Please check your email",
+            });
+            sendConfirmationEmail(
+                admin.userName,
+                admin.email,
+                admin.confirmationCode
+            );
+        }
+        else{
+            if(err)
+                res.status(422).send(err.message);
+            else
+                return next(err);    
+        }
              
      });
  }
+
+//verfiy the email
+exports.verifyUser = (req, res, next) => {
+   Admin.findOne({
+      confirmationCode: req.params.confirmationCode,
+    }).then((admin) => {
+        if (!admin) {
+          return res.status(404).send({ message: "User Not found." });
+        }
+        admin.status = "Active";
+        admin.save((err) => {
+          if (err) {
+            res.status(500).send({ message: err });
+          }
+          else{
+            res.status(200).send({ message: "User Account activate"});
+
+          }
+        });
+      })
+      .catch((e) => console.log("error", e));
+  };
+
 
 module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
     console.log("request sent");
@@ -99,6 +173,11 @@ module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
                 message:'Email is not found',
                 success:false
             })
+        }
+        if (admin.status != "Active") {
+            return res.status(401).send({
+              message: "Pending Account. Please Verify Your Email!",
+            });
         }
         let isMatch = await bcrypt.compare(password, admin.password);
         if (isMatch) {
@@ -353,6 +432,111 @@ module.exports.deleteRequests =(req,res)=>{
             message: "Could not delete Request with id " + req.params.id
         });
     });
+}
+
+// forgot password 
+module.exports.forgotPassword = async(req,res)=>{
+        if (!req.body.email) {
+            return res.status(500).send({ message: 'Email is required' });
+        }
+        const admin = await Admin.findOne({
+            email:req.body.email
+        });
+        if (!admin) {
+        return res.status(404).send({ message: 'Email does not exist' });
+        }
+        var resettoken = new Reset({ _userId: admin._id, resettoken: crypto.randomBytes(16).toString('hex') });
+
+        await resettoken.save(function (err) {
+            if (err) { return res.status(500).send({ msg: err.message }); }
+             
+         });
+        await Reset.findOne({ _userId: admin._id,resettoken: { $ne: resettoken.resettoken }}).deleteOne().catch();
+        res.status(200).send({
+             message: 'Reset Password successfully.' 
+        });
+
+        var mailOptions = {
+        to: admin.email,
+        from: user,
+        subject: 'Zerihun Casting Agent App RestPassword',
+        text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+        'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+        'http://localhost:4200/response-reset-password/' + resettoken.resettoken + '\n\n' +
+        'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+        }
+       // console.log(resettoken.resettoken);
+       // console.log(admin.email); 
+        transport.sendMail(mailOptions, (err, response) => { 
+            if(err){
+                res.status(422).send({
+                    message:err
+                })
+            }else{
+                res.status(200).send({
+                    message:"Message sent: " + response.msg
+                })
+            }
+       })
+
+
+}
+
+// validate the token
+module.exports.validateToken = async(req,res)=>{
+        if (!req.body.resettoken) {
+             return res.status(500).json({ message: 'Token is required' });
+        }
+        const admin = await Reset.findOne({
+            resettoken: req.body.resettoken
+        });
+        if (!admin) {
+        return res.status(409) .send({ 
+            message: 'Invalid URL' 
+        });
+        }
+        Admin.findOneAndUpdate({id: admin._userId }).then(() => {
+            res.status(200).send({ message: 'Token verified successfully.' });
+        }).catch((err) => {
+             return res.status(500).send({ msg: err.message });
+        });
+
+}
+
+// new password
+module.exports.newPassword= async(req,res)=>{
+    Reset.findOne({ resettoken: req.body.resettoken }, function (err, userToken, next) {
+        if (!userToken) {
+          return res .status(409) .json({ 
+              message: 'Token has expired' 
+            });
+        }
+  
+        Admin.findOne({ _id: userToken._userId}, function (err, userEmail, next) {
+          if (!userEmail) {
+            return res .status(409) .json({ 
+                message: 'User does not exist'
+             });
+          }
+          userEmail.password = req.body.newPassword;
+          userEmail.save(function (err) {
+              if (err) {
+                return res.status(400) .send({ 
+                    message: 'Password can not reset.' 
+                });
+              } else {
+                userToken.remove();
+                return res.status(201).send({ 
+                    message: 'Password reset successfully' 
+                });
+              }
+  
+            });
+       
+        });
+  
+      })
+   
 }
 
 

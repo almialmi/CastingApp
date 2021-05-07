@@ -19,3 +19,4 @@ require('../models/computationPost.models');
 require('../models/event.models');
 require('../models/user.models');
 require('../models/request.models');
+require('../models/reset.models');

@@ -31,6 +31,9 @@ router.post('/registerAdmin',ctrlAdmin.adminRegister);
 // normal user register
 router.post('/registerNormalUser',ctrlAdmin.normalUserRegister);
 
+// verfiy the email
+router.get("/verfiyEmail/:confirmationCode",ctrlAdmin.verifyUser);
+
 //update profile 
 router.put('/updateAdminAndNormalUserProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.updateAdminAndNormalUserProfile);
 
@@ -134,6 +137,13 @@ router.get('/higherToLowerLikes',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate
 //show best 3 winners
 router.get('/showBestThreeWinners',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlComputPost.notifyBestThreeWinners);
 
-//user section
+//forgot password
+router.post('/resetPassword',ctrlAdmin.forgotPassword);
+
+//validate token
+router.post('/validateToken',ctrlAdmin.validateToken);
+
+// new password
+router.post('/newPassword',ctrlAdmin.newPassword);
 
 module.exports = router;
