@@ -97,16 +97,19 @@ router.put('/approveOrRejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Auth
 
 //event section
 //register event
-router.post('/registerEvent',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.registerEvent);
+router.post('/registerEvent',ctrlEvent.registerEvent);
 
 //show events
-router.get('/showEvents/:closed',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showEvents);
+router.get('/showEvents/:closed',ctrlEvent.showEvents);
+
+// fetch image
+router.get('/fetchImage/:id',ctrlEvent.fetchImage);
 
 //update events
 router.put('/updateEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.updateEvent);
 
 //delete events
-router.delete('/deleteEvent/:id/:filename',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.deleteEvent);
+router.delete('/deleteEvent/:id',ctrlEvent.deleteEvent);
 
 //show remainig time and tell closed or expired date
 router.get('/showRemaingTimeAndExpiredDate/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showRemainingTimeAndExpried);

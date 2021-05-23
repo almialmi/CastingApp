@@ -1,6 +1,7 @@
 const User = require('../models/user.models');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
 global.__basedir = __dirname;
 
@@ -54,7 +55,7 @@ module.exports.userRegister = (req,res)=>{
                 user.category = req.body.category;
                 user.video = req.body.video;
                 user.gender = req.body.gender;
-                user.photos.data = req.files;
+                user.photos.data = fs.readFileSync(path.join(__dirname + '/userPhotoStorage/' + req.files));
                 user.photos.contentType='image/png';
 
                 user.save((err,doc)=>{
@@ -124,7 +125,10 @@ module.exports.updateUser =(req,res)=>{
                         category:req.body.category,
                         video:req.body.video,
                         gender:req.body.gender,
-                        photos:{data:req.files,contentType:'image/png'}
+                        photos:{
+                            data:fs.readFileSync(path.join(__dirname + '/userPhotoStorage' + req.files)),
+                            contentType:'image/png'
+                        }
    
                     }
                 }, {new: true})
@@ -153,7 +157,7 @@ module.exports.updateUser =(req,res)=>{
 }
 
 module.exports.deleteUser= (req,res)=>{
-    var filepath= path.resolve(__basedir, './usersPhotoStorage/' + req.params.files); 
+    var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.params.files); 
     User.findByIdAndRemove(req.params.id)
     .then(user => {
         if(!user) {
