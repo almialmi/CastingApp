@@ -28,7 +28,7 @@ var userSchema = new mongoose.Schema({
 
     },
     photos:{
-        data:Buffer,
+        data:Array,
         contentType:String
     },
     gender:{

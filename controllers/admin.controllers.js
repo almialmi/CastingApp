@@ -179,7 +179,7 @@ module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
               message: "Pending Account. Please Verify Your Email!",
             });
         }
-        let isMatch = await bcrypt.compare(password, admin.password);
+        let isMatch = await bcrypt.compare(password,admin.password);
         if (isMatch) {
             let token = jwt.sign({
                 admin_id:admin._id,

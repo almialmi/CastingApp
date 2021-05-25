@@ -54,6 +54,9 @@ router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrl
 //fetch user 
 router.get('/fetchAllUser',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.fetchAllUser);
 
+// fetch image
+//router.get('/fetchImage/:id',ctrlUser.fetchImage);
+
 //fetch based on category and gender
 
 // male
@@ -97,19 +100,19 @@ router.put('/approveOrRejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Auth
 
 //event section
 //register event
-router.post('/registerEvent',ctrlEvent.registerEvent);
+router.post('/registerEvent',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.registerEvent);
 
 //show events
-router.get('/showEvents/:closed',ctrlEvent.showEvents);
+router.get('/showEvents/:closed',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showEvents);
 
 // fetch image
-router.get('/fetchImage/:id',ctrlEvent.fetchImage);
+//router.get('/imagePath/:id',ctrlEvent.imagePath);
 
 //update events
 router.put('/updateEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.updateEvent);
 
 //delete events
-router.delete('/deleteEvent/:id',ctrlEvent.deleteEvent);
+router.delete('/deleteEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.deleteEvent);
 
 //show remainig time and tell closed or expired date
 router.get('/showRemaingTimeAndExpiredDate/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlEvent.showRemainingTimeAndExpried);

@@ -5,7 +5,7 @@ var catagorySchema = new mongoose.Schema({
         required:true
     },
     photo:{
-        data:String,
+        data:Buffer,
         contentType:String
     }
 });

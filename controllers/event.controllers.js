@@ -38,10 +38,19 @@ module.exports.registerEvent =(req,res,next)=>{
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `eventPhotoStorage/${req.file}`})
 
             } else {
+              
+              function unlinkImage(){
+                var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
+                fs.unlink(filepath,function(err,result){
+                    console.log(err);
+                });
+              }
+
                var newImg = fs.readFileSync(req.file.path);
                var encImg = newImg.toString('base64');
                var startDate = new Date(req.body.startDate);
                var endDate = new Date(req.body.endDate); 
+
                var eventForCOmputation = new EventForComputation();
                eventForCOmputation.name = req.body.name;
                eventForCOmputation.description = req.body.description;
@@ -55,6 +64,7 @@ module.exports.registerEvent =(req,res,next)=>{
                     if(!err)
                       res.status(201).send(doc);
                     else{
+                        unlinkImage()
                         if(err)
                            res.status(422).send(err);
                         else
@@ -124,8 +134,15 @@ module.exports.updateEvent =(req,res)=>{
             }
             
             else {
+                function unlinkImage(){
+                    var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
+                    fs.unlink(filepath,function(err,result){
+                        console.log(err);
+                    });
+                  }
+    
                 var newImg = fs.readFileSync(req.file.path);
-               var encImg = newImg.toString('base64');
+                var encImg = newImg.toString('base64');
                 EventForComputation.findByIdAndUpdate(req.params.id,{
                     $set:{
                         name:req.body.name,
@@ -141,6 +158,7 @@ module.exports.updateEvent =(req,res)=>{
                 }, {new: true})
                 .then(cat => {
                     if(!cat) {
+                        unlinkImage()
                         return res.status(404).send({
                             message: " Event not found with this " + req.params.id
                         });
@@ -149,6 +167,7 @@ module.exports.updateEvent =(req,res)=>{
                            message:"Event Update Successfully !!"
                     });
                 }).catch(err => {
+                    unlinkImage()
                     if(err.kind === 'ObjectId') {
                         return res.status(404).send({
                             message: "Event not found with this " + req.params.id
@@ -163,8 +182,8 @@ module.exports.updateEvent =(req,res)=>{
 
 }
 module.exports.deleteEvent=(req,res)=>{
+    //var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.params.filename);
     
-   // var  filepath = path.resolve((result.photo.data).toString());
     EventForComputation.findByIdAndRemove(req.params.id)
     .then(eve => {
         if(!eve) {
@@ -184,7 +203,7 @@ module.exports.deleteEvent=(req,res)=>{
         });
     });
 
-    //fs.unlinkSync(filepath);
+  //  fs.unlinkSync(filepath);
 
 }
 
@@ -244,7 +263,6 @@ module.exports.showRemainingTimeAndExpried= (req,res)=>{
             message: "Remaing Time to Close :" + days + " " + "days" + " " + hours + " " + "hours" + " " + minutes + " " + "minutes" + " " + seconds + "seconds"
 
         });
-        console.log(interval);
     }
     
 }
@@ -252,26 +270,4 @@ module.exports.showRemainingTimeAndExpried= (req,res)=>{
 }
 
 
-module.exports.fetchImage =(req,res) =>{
-   EventForComputation.findById({_id:req.params.id},(err,result)=>{
-       console.log((result.photo.data).toString('utf8'));
-    
-    if (!result.photo || result.photo == 0) {
-        return res.status(404).send({
-            message: "Image not found"
-        })
-    }
-    if (result.photo.contentType === "image/png") {
-        var  filepath = path.resolve(fs.readFileSync((result.photo.data).toString('utf8')));
-        fs.unlinkSync(filepath);
-        res.status(200).send("unlink success");
-    } else {
-        res.status(404).send({
-            message: "Not an image"
-        })
-    }
-    });
-   
-
-}
 

@@ -38,15 +38,24 @@ module.exports.registerCategory =(req,res,next)=>{
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `categoryPhotoStorage/${req.file}`})
 
             } else {
-               var category = new Category();
+                function unlinkImage(){
+                    var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.file.filename);
+                    fs.unlink(filepath,function(err,result){
+                        console.log(err);
+                    });
+                  }
+                var newImg = fs.readFileSync(req.file.path);
+                var encImg = newImg.toString('base64');
+                var category = new Category();
                 category.name = req.body.name;
-                category.photo.data = req.file.filename;
+                category.photo.data = Buffer.from(encImg, 'base64');
                 category.photo.contentType='image/png';
 
                 category.save((err,doc)=>{
                     if(!err)
                       res.status(201).send(doc);
                     else{
+                        unlinkImage()
                         if(err)
                            res.status(422).send(err);
                         else
@@ -85,14 +94,26 @@ module.exports.upadteCategoty= (req,res)=>{
             }
             
             else {
+                function unlinkImage(){
+                    var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.file.filename);
+                    fs.unlink(filepath,function(err,result){
+                        console.log(err);
+                    });
+                  }
+                var newImg = fs.readFileSync(req.file.path);
+                var encImg = newImg.toString('base64');
                 Category.findByIdAndUpdate(req.params.id,{
                     $set:{
                         name:req.body.name,
-                        photo:{data:req.file.filename,contentType:'image/png'}
+                        photo:{
+                            data:Buffer.from(encImg, 'base64'),
+                            contentType:'image/png'
+                        }
                     }
                 }, {new: true})
                 .then(cat => {
                     if(!cat) {
+                        unlinkImage()
                         return res.status(404).send({
                             message: " Category not found with this " + req.params.id
                         });
@@ -101,6 +122,7 @@ module.exports.upadteCategoty= (req,res)=>{
                            message:"Category Update Successfully !!"
                     });
                 }).catch(err => {
+                    unlinkImage()
                     if(err.kind === 'ObjectId') {
                         return res.status(404).send({
                             message: "Category not found with this " + req.params.id
@@ -115,9 +137,8 @@ module.exports.upadteCategoty= (req,res)=>{
 }
 
 module.exports.deleteCategory=(req,res)=>{
-
-    var filepath= path.resolve(__basedir, './categoryPhotoStorage/' + req.params.filename);  
-
+    //var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.params.filename); 
+  
     Category.findByIdAndRemove(req.params.id)
     .then(cat => {
         if(!cat) {
@@ -136,7 +157,6 @@ module.exports.deleteCategory=(req,res)=>{
             message: "Could not delete Category with id " + req.params.id
         });
     });
-
-    fs.unlinkSync(filepath);
+    //fs.unlinkSync(filepath);
 
 }

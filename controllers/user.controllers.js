@@ -38,34 +38,63 @@ module.exports.userRegister = (req,res)=>{
             } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
                 formatedphone = phone
             }
-
-            console.log(req.files[0].filename)
-            //console.log(req.file)
-
             if(req.files == undefined){
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
 
             } else {
-               var user = new User();
-                user.firstName = req.body.firstName;
-                user.lastName = req.body.lastName;
-                user.email = req.body.email;
-                user.mobile = formatedphone;
-                user.category = req.body.category;
-                user.video = req.body.video;
-                user.gender = req.body.gender;
-                user.photos.data = fs.readFileSync(path.join(__dirname + '/userPhotoStorage/' + req.files));
-                user.photos.contentType='image/png';
 
-                user.save((err,doc)=>{
+            function unlinkImage(n){
+                for(let i=0;i<n;i++){ 
+                    var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
+                    console.log(filepath)
+                    fs.unlink(filepath,function(err,result){
+                        console.log(err);
+
+                    });
+                }
+                    
+            } 
+            
+    
+           var buffArray = [];    
+            function assignBUffer(n){
+                
+                for(let i=0;i<n;i++){ 
+                    var newImg = fs.readFileSync(req.files[i].path);
+                    var encImg = newImg.toString('base64');
+                    var buff = Buffer.from(encImg, 'base64');
+                    buffArray.push(buff)
+                 }
+                
+            } 
+            assignBUffer(req.files.length)
+           // console.log(buffArray);
+
+            var user = new User();
+            user.firstName = req.body.firstName;
+            user.lastName = req.body.lastName;
+            user.email = req.body.email;
+            user.mobile = formatedphone;
+            user.category = req.body.category;
+            user.video = req.body.video;
+            user.gender = req.body.gender;
+            user.photos.data = buffArray;
+            user.photos.contentType='image/png';
+            
+            user.save((err,doc)=>{
                     if(!err)
-                      res.status(201).send(doc);
+                      res.status(201).send({
+                          message:"Register Successfully"
+                      });
                     else{
-                        if(err)
-                           res.status(422).send(err);
-                        else
-                           return next(err);    
+                        if(err){
+                          unlinkImage(req.files.length)
+                          res.status(422).send(err);
+                        }else{
+                            return next(err); 
+
+                        }
                     }
             
     });
@@ -116,6 +145,33 @@ module.exports.updateUser =(req,res)=>{
                     formatedphone = phone
                 }
 
+                function unlinkImage(n){
+                    for(let i=0;i<n;i++){ 
+                        var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
+                        console.log(filepath)
+                        fs.unlink(filepath,function(err,result){
+                            console.log(err);
+    
+                        });
+                    }
+                        
+                } 
+                
+        
+               var buffArray = [];    
+                function assignBUffer(n){
+                    
+                    for(let i=0;i<n;i++){ 
+                        var newImg = fs.readFileSync(req.files[i].path);
+                        var encImg = newImg.toString('base64');
+                        var buff = Buffer.from(encImg, 'base64');
+                        buffArray.push(buff)
+                     }
+                    
+                } 
+                assignBUffer(req.files.length)
+               
+              
                 User.findByIdAndUpdate(req.params.id,{
                     $set:{
                         firstName:req.body.firstName,
@@ -126,7 +182,7 @@ module.exports.updateUser =(req,res)=>{
                         video:req.body.video,
                         gender:req.body.gender,
                         photos:{
-                            data:fs.readFileSync(path.join(__dirname + '/userPhotoStorage' + req.files)),
+                            data:buffArray,
                             contentType:'image/png'
                         }
    
@@ -134,6 +190,7 @@ module.exports.updateUser =(req,res)=>{
                 }, {new: true})
                 .then(user => {
                     if(!user) {
+                        unlinkImage(req.files.length)
                         return res.status(404).send({
                             message: " User not found with this " + req.params.id
                         });
@@ -142,6 +199,7 @@ module.exports.updateUser =(req,res)=>{
                            message:"Profile Update Successfully !!"
                     });
                 }).catch(err => {
+                    unlinkImage(req.files.length)
                     if(err.kind === 'ObjectId') {
                         return res.status(404).send({
                             message: "User not found with this " + req.params.id
@@ -157,7 +215,7 @@ module.exports.updateUser =(req,res)=>{
 }
 
 module.exports.deleteUser= (req,res)=>{
-    var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.params.files); 
+   // var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.params.files); 
     User.findByIdAndRemove(req.params.id)
     .then(user => {
         if(!user) {
@@ -176,7 +234,7 @@ module.exports.deleteUser= (req,res)=>{
             message: "Could not delete User with id " + req.params.id
         });
     });
-    fs.unlinkSync(filepath);
+ //   fs.unlinkSync(filepath);
 
 }
 
@@ -313,6 +371,8 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
     
 
 }
+
+
 
 
 
