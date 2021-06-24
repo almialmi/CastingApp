@@ -75,13 +75,13 @@ module.exports.userRegister = (req,res)=>{
             user.category = req.body.category;
             user.video = req.body.video;
             user.gender = req.body.gender;
-            user.photo1.data = Buffer.from(encImg1, 'base64');;
+            user.photo1.data = Buffer.from(encImg1, 'base64');
             user.photo1.contentType='image/png';
-            user.photo2.data = Buffer.from(encImg2, 'base64');;
+            user.photo2.data = Buffer.from(encImg2, 'base64');
             user.photo2.contentType='image/png';
-            user.photo3.data = Buffer.from(encImg3, 'base64');;
+            user.photo3.data = Buffer.from(encImg3, 'base64');
             user.photo3.contentType='image/png';
-            user.photo4.data = Buffer.from(encImg4, 'base64');;
+            user.photo4.data = Buffer.from(encImg4, 'base64');
             user.photo4.contentType='image/png';
 
             
@@ -127,6 +127,9 @@ module.exports.updateUser =(req,res)=>{
     uploadStorage(req, res, (err) => {
         if(err){
             console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             if(req.files == undefined){
 
@@ -161,18 +164,14 @@ module.exports.updateUser =(req,res)=>{
                 } 
                 
         
-               var buffArray = [];    
-                function assignBUffer(n){
-                    
-                    for(let i=0;i<n;i++){ 
-                        var newImg = fs.readFileSync(req.files[i].path);
-                        var encImg = newImg.toString('base64');
-                        var buff = Buffer.from(encImg, 'base64');
-                        buffArray.push(buff)
-                     }
-                    
-                } 
-                assignBUffer(req.files.length)
+                var newImg1 = fs.readFileSync(req.files[0].path);
+                var encImg1 = newImg1.toString('base64');
+                var newImg2 = fs.readFileSync(req.files[1].path);
+                var encImg2 = newImg2.toString('base64');
+                var newImg3 = fs.readFileSync(req.files[2].path);
+                var encImg3 = newImg3.toString('base64');
+                var newImg4 = fs.readFileSync(req.files[3].path);
+                var encImg4 = newImg4.toString('base64');
                
               
                 User.findByIdAndUpdate(req.params.id,{
@@ -184,11 +183,22 @@ module.exports.updateUser =(req,res)=>{
                         category:req.body.category,
                         video:req.body.video,
                         gender:req.body.gender,
-                        photos:{
-                            data:buffArray,
+                        photos1:{
+                            data:Buffer.from(encImg1, 'base64'),
+                            contentType:'image/png'
+                        },
+                        photos2:{
+                            data:Buffer.from(encImg2, 'base64'),
+                            contentType:'image/png'
+                        },
+                        photos3:{
+                            data:Buffer.from(encImg3, 'base64'),
+                            contentType:'image/png'
+                        },
+                        photos4:{
+                            data:Buffer.from(encImg4, 'base64'),
                             contentType:'image/png'
                         }
-   
                     }
                 }, {new: true})
                 .then(user => {
@@ -347,7 +357,7 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
        let numOfStaffs;
        let category = req.params.category;
        let gender = req.params.gender;
-       console.log(category);
+       //console.log(category);
 
        
        numOfStaffs = await User.countDocuments({});
