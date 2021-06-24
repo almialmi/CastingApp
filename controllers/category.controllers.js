@@ -53,7 +53,9 @@ module.exports.registerCategory =(req,res,next)=>{
 
                 category.save((err,doc)=>{
                     if(!err)
-                      res.status(201).send(doc);
+                      res.status(201).send({
+                          message:"create successfully!!"
+                      });
                     else{
                         unlinkImage()
                         if(err)

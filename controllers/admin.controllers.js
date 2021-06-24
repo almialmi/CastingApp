@@ -7,6 +7,7 @@ const passport = require('passport');
 const Request = require('../models/request.models');
 const nodemailer = require("nodemailer");
 const crypto = require('crypto');
+const { roles } = require('./role');
 
 const user = "almialmi61621@gmail.com";
 const pass = "Cybma12345";
@@ -25,7 +26,7 @@ const transport = nodemailer.createTransport({
 const sendConfirmationEmail = (name, email, confirmationCode) => {
     console.log("Check");
     transport.sendMail({
-      from: user,
+      from:process.env.User,
       to: email,
       subject: "Please confirm your account",
       html: `<h1>Email Confirmation</h1>
@@ -164,7 +165,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
     
 }
 
-module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
+module.exports.adminAndNormalUserLogin = async(req , res , next) => {
     try {
         const { email, password } = req.body;
         const admin = await Admin.findOne({ email });
@@ -174,30 +175,30 @@ module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
                 success:false
             })
         }
-        if (admin.status != "Active") {
-            return res.status(401).send({
-              message: "Pending Account. Please Verify Your Email!",
-            });
+        if(admin.status === "Pending"){
+            return res.status(403).json({
+                message:'Your Account is deactivated',
+                success:false
+            })
+
         }
-        let isMatch = await bcrypt.compare(password,admin.password);
+        let isMatch = bcrypt.compare(password, admin.password);
         if (isMatch) {
             let token = jwt.sign({
                 admin_id:admin._id,
-                email:admin.email,
-                role:admin.role
-                },
+                role:admin.role,
+                email:admin.email
+            },
             process.env.JWT_SECRET,
           { expiresIn :process.env.JWT_EXP });
           let result ={
               token: `${token}`
              }
-         return res.status(200).json({
+         return res.status(200).send({
               ...result,
               message:'Login successfully !!',
               success:true
         }) 
-
-
         }else{
             return res.status(403).json({
                 message:'Incorrect password',
@@ -208,7 +209,6 @@ module.exports.adminAndNormalUserLogin = async(req,res,next)=>{
        } catch (error) {
         next(error);
        } 
-
 }
 
 module.exports.fetchNormalUserForAdmin = async(req,res)=>{
@@ -250,17 +250,17 @@ module.exports.fetchNormalUserForAdmin = async(req,res)=>{
 
 }
 
-module.exports.fetchAdmin =(req,res)=>{
-    let role = 'Admin'
-    Admin.find({role:role},{salSecrete:0,__v:0},(err,result)=>{
-        if(err){
-            res.send(err)
-
-        }else{
-            res.send(result)
-        }
-
-    });
+module.exports.fetchOwnProfile = async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const admin = await Admin.findById(id);
+        if (!admin) return next(new Error('User does not exist'));
+        res.status(200).send({
+           message: user
+        });
+       } catch (error) {
+        next(error)
+    }
 
 }
 
@@ -537,6 +537,30 @@ module.exports.newPassword= async(req,res)=>{
   
       })
    
+}
+
+
+module.exports.grantAccess = function(action, resource) {
+ return async (req, res, next) => {
+    var token;
+    var role;
+    if('authorization' in req.headers)
+    token = req.headers['authorization'].split(' ')[1];
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        role = decoded.role;
+    });
+    try {
+        const permission = roles.can(role)[action](resource);
+        if (!permission.granted) {
+            return res.status(401).json({
+            error: "You don't have enough permission to perform this action"
+            });
+        }
+        next()
+    } catch (error) {
+        next(error)
+    }
+ }
 }
 
 

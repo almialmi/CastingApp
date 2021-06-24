@@ -30,6 +30,9 @@ module.exports.userRegister = (req,res)=>{
     uploadStorage(req, res, (err) => {
         if(err){
             console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             let formatedphone = 0;
             let phone = req.body.mobile;
@@ -55,22 +58,15 @@ module.exports.userRegister = (req,res)=>{
                 }
                     
             } 
-            
-    
-           var buffArray = [];    
-            function assignBUffer(n){
-                
-                for(let i=0;i<n;i++){ 
-                    var newImg = fs.readFileSync(req.files[i].path);
-                    var encImg = newImg.toString('base64');
-                    var buff = Buffer.from(encImg, 'base64');
-                    buffArray.push(buff)
-                 }
-                
-            } 
-            assignBUffer(req.files.length)
-           // console.log(buffArray);
-
+            var newImg1 = fs.readFileSync(req.files[0].path);
+            var encImg1 = newImg1.toString('base64');
+            var newImg2 = fs.readFileSync(req.files[1].path);
+            var encImg2 = newImg2.toString('base64');
+            var newImg3 = fs.readFileSync(req.files[2].path);
+            var encImg3 = newImg3.toString('base64');
+            var newImg4 = fs.readFileSync(req.files[3].path);
+            var encImg4 = newImg4.toString('base64');
+                 
             var user = new User();
             user.firstName = req.body.firstName;
             user.lastName = req.body.lastName;
@@ -79,8 +75,15 @@ module.exports.userRegister = (req,res)=>{
             user.category = req.body.category;
             user.video = req.body.video;
             user.gender = req.body.gender;
-            user.photos.data = buffArray;
-            user.photos.contentType='image/png';
+            user.photo1.data = Buffer.from(encImg1, 'base64');;
+            user.photo1.contentType='image/png';
+            user.photo2.data = Buffer.from(encImg2, 'base64');;
+            user.photo2.contentType='image/png';
+            user.photo3.data = Buffer.from(encImg3, 'base64');;
+            user.photo3.contentType='image/png';
+            user.photo4.data = Buffer.from(encImg4, 'base64');;
+            user.photo4.contentType='image/png';
+
             
             user.save((err,doc)=>{
                     if(!err)
@@ -369,6 +372,25 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
        });
      }
     
+
+}
+
+module.exports.fetchImage =(req,res)=>{
+
+    User.findById(req.params.id)
+    .then(user => {
+        res.setHeader('content-type',user.photo4.contentType);
+        res.send(user.photo4.data);
+    }).catch(err => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return res.status(404).send({
+                message: "User found with id " + req.params.id
+            });                
+        }
+        return res.status(500).send({
+            message: "Could not delete User with id " + req.params.id
+        });
+    });
 
 }
 
