@@ -8,6 +8,7 @@ const Request = require('../models/request.models');
 const nodemailer = require("nodemailer");
 const crypto = require('crypto');
 const { roles } = require('./role');
+const moment = require('moment-timezone');
 
 const user = "almialmi61621@gmail.com";
 const pass = "Cybma12345";
@@ -167,7 +168,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
 
 module.exports.adminAndNormalUserLogin = async(req , res , next) => {
     try {
-        const { email, password } = req.body;
+        const { email,password } = req.body;
         const admin = await Admin.findOne({ email });
         if (!admin) {
             return res.status(404).json({
@@ -182,8 +183,28 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
             })
 
         }
-        let isMatch = bcrypt.compare(password, admin.password);
+        if (admin.isLocked) {
+            return admin.incrementLoginAttempts(function(err) {
+                if (err) {
+                    return send({
+                        message:err
+                    });
+                }
+                return res.status(403).send({ 
+                    message: 'You have exceeded the maximum number of login attempts.Your account is locked until ' + moment(admin.lockUntil).tz("East Africa Time ").format('LT z') + '.  You may attempt to log in again after that time.' });
+            });
+        }
+
+       let isMatch = await bcrypt.compare(password,admin.password);
+        console.log(isMatch)
         if (isMatch) {
+            var updates = {
+                $set: { loginAttempts: 0 },
+                $unset: { lockUntil: 1 }
+            }
+            admin.updateOne(updates, function(err) {
+                if (err) console.log(err);
+            });
             let token = jwt.sign({
                 admin_id:admin._id,
                 role:admin.role,
@@ -200,9 +221,14 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
               success:true
         }) 
         }else{
-            return res.status(403).json({
-                message:'Incorrect password',
-                success:false
+            admin.incrementLoginAttempts(function(err) {
+                if (err) {
+                    return res.status(403).send(err);
+                }
+                return res.status(403).json({
+                    message:'Incorrect password',
+                    success:false
+                });
             });
 
         }
