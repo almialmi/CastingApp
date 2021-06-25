@@ -21,7 +21,7 @@ router.get('/showCategory',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlA
 router.put('/updateCategory/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteCategoty);
 
 //delete category 
-router.delete('/deleteCategory/:id/:filename',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.grantAccess('deleteAny','category'),ctrlCategory.deleteCategory);
+router.delete('/deleteCategory/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.grantAccess('deleteAny','category'),ctrlCategory.deleteCategory);
 
 
 //admin section
@@ -67,7 +67,7 @@ router.get('/fetchMaleAndFemaleUser/:category/:gender',jwtHelper.verifyJwtToken,
 router.put('/updateUser/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.grantAccess('updateAny','user'),ctrlUser.updateUser);
 
 //delete user 
-router.delete('/deleteUser/:id/:files',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.grantAccess('deleteAny','user'),ctrlUser.deleteUser);
+router.delete('/deleteUser/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.grantAccess('deleteAny','user'),ctrlUser.deleteUser);
 
 //update like
 router.put('/updateLike/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlUser.updateLike);

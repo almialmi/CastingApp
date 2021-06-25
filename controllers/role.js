@@ -13,6 +13,7 @@ ac.grant("NormalUser")
   .readAny("event")
   .readAny("category")
   .readAny("computationalPost")
+  .readAny("user")
 
  
 ac.grant("Admin")
