@@ -29,7 +29,7 @@ const uploadStorage = multer({storage:storage,
 module.exports.userRegister = (req,res)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            console.log(err)
+           // console.log(err)
             if(err.code === "LIMIT_UNEXPECTED_FILE"){
                 return res.send("Too many image to upload.");
             }
@@ -45,7 +45,11 @@ module.exports.userRegister = (req,res)=>{
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
 
-            } else {
+            } 
+            else if (req.files.length < 4) {
+                return res.send("Must upload 4 photos");
+              
+            }else {
 
             function unlinkImage(n){
                 for(let i=0;i<n;i++){ 
@@ -99,7 +103,6 @@ module.exports.userRegister = (req,res)=>{
 
                         }
                     }
-            
     });
 
  }}});
@@ -250,24 +253,17 @@ module.exports.updateUser =(req,res)=>{
 
 module.exports.deleteUser= (req,res)=>{
    // var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.params.files); 
-    User.findByIdAndRemove(req.params.id)
-    .then(user => {
-        if(!user) {
-            return res.status(404).send({
-                message: "User not found with id " + req.params.id
-            });
-        }
-        res.send({message: "User deleted successfully!"});
-    }).catch(err => {
-        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-            return res.status(404).send({
-                message: "User found with id " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Could not delete User with id " + req.params.id
+   User.findById(req.params.id,function(err,user){
+    if(err){
+        return res.status(404).send({
+            message: "User not found"
         });
-    });
+    }else{
+        user.remove();
+        res.send({message: "User deleted successfully!"});
+    }
+})
+
  //   fs.unlinkSync(filepath);
 
 }

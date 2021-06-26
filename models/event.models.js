@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ComputationPost = require('../models/computationPost.models');
 
 var eventSchema = new mongoose.Schema({
     name:{
@@ -29,6 +30,11 @@ var eventSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     }
+});
+
+eventSchema.pre('remove', function(next) {
+    ComputationPost.remove({eventForComputation: this._id}).exec();
+    next();
 });
 
 

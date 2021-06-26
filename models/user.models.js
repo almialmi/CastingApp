@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
+const ComputationPost = require('../models/computationPost.models');
+const Request = require('../models/request.models');
+
 var userSchema = new mongoose.Schema({
     firstName:{
         type:String,
@@ -64,6 +67,11 @@ userSchema.path('email').validate((val)=>{
 
 userSchema.plugin(uniqueValidator);
 
+userSchema.pre('remove', function(next) {
+    ComputationPost.remove({user: this._id}).exec();
+    Request.remove({requestedUser: this._id}).exec();
+    next();
+});
 
 const User = mongoose.model('User',userSchema);
 

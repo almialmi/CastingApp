@@ -141,24 +141,16 @@ module.exports.upadteCategoty= (req,res)=>{
 module.exports.deleteCategory=(req,res)=>{
     //var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.params.filename); 
   
-    Category.findByIdAndRemove(req.params.id)
-    .then(cat => {
-        if(!cat) {
+    Category.findById(req.params.id,function(err,cat){
+        if(err){
             return res.status(404).send({
-                message: "Category not found with id " + req.params.id
+                message: "Category not found"
             });
+        }else{
+            cat.remove();
+            res.send({message: "Category deleted successfully!"});
         }
-        res.send({message: "Category deleted successfully!"});
-    }).catch(err => {
-        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-            return res.status(404).send({
-                message: "Category found with id " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Could not delete Category with id " + req.params.id
-        });
-    });
+    })
     //fs.unlinkSync(filepath);
 
 }

@@ -184,24 +184,16 @@ module.exports.updateEvent =(req,res)=>{
 module.exports.deleteEvent=(req,res)=>{
     //var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.params.filename);
     
-    EventForComputation.findByIdAndRemove(req.params.id)
-    .then(eve => {
-        if(!eve) {
+    EventForComputation.findById(req.params.id,function(err,eve){
+        if(err){
             return res.status(404).send({
-                message: "Event not found with id " + req.params.id
+                message: "Event not found"
             });
+        }else{
+            eve.remove();
+            res.send({message: "Event deleted successfully!"});
         }
-        res.send({message: "Event deleted successfully!"});
-    }).catch(err => {
-        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-            return res.status(404).send({
-                message: "Event found with id " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Could not delete Event with id " + req.params.id
-        });
-    });
+    })
 
   //  fs.unlinkSync(filepath);
 

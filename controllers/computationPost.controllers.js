@@ -1,6 +1,5 @@
 const ComputationPost = require('../models/computationPost.models');
 
-
 module.exports.addComputationPost =(req,res,next)=>{
     var post = new ComputationPost({
         user:req.body.user,
