@@ -3,6 +3,9 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
+const validator =require('validator');
+
+
 global.__basedir = __dirname;
 
 //multer upload storage
@@ -33,79 +36,84 @@ module.exports.userRegister = (req,res)=>{
             if(err.code === "LIMIT_UNEXPECTED_FILE"){
                 return res.send("Too many image to upload.");
             }
-        } else {
-            let formatedphone = 0;
-            let phone = req.body.mobile;
-            if (phone.charAt(0) == '0') {
-                formatedphone = '+251' + phone.substring(1);
-            } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
-                formatedphone = phone
-            }
-            if(req.files == undefined){
-
-                res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
-
-            } 
-            else if (req.files.length < 4) {
-                return res.send("Must upload 4 photos");
-              
-            }else {
-
-            function unlinkImage(n){
-                for(let i=0;i<n;i++){ 
-                    var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
-                    console.log(filepath)
-                    fs.unlink(filepath,function(err,result){
-                        console.log(err);
-
-                    });
+        } 
+        else {
+           var validEmail = validator.isEmail(req.body.email);
+           if(validEmail){
+                let formatedphone = 0;
+                let phone = req.body.mobile;
+                if (phone.charAt(0) == '0') {
+                    formatedphone = '+251' + phone.substring(1);
+                } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
+                    formatedphone = phone
                 }
-                    
-            } 
-            var newImg1 = fs.readFileSync(req.files[0].path);
-            var encImg1 = newImg1.toString('base64');
-            var newImg2 = fs.readFileSync(req.files[1].path);
-            var encImg2 = newImg2.toString('base64');
-            var newImg3 = fs.readFileSync(req.files[2].path);
-            var encImg3 = newImg3.toString('base64');
-            var newImg4 = fs.readFileSync(req.files[3].path);
-            var encImg4 = newImg4.toString('base64');
-                 
-            var user = new User();
-            user.firstName = req.body.firstName;
-            user.lastName = req.body.lastName;
-            user.email = req.body.email;
-            user.mobile = formatedphone;
-            user.category = req.body.category;
-            user.video = req.body.video;
-            user.gender = req.body.gender;
-            user.photo1.data = Buffer.from(encImg1, 'base64');
-            user.photo1.contentType='image/png';
-            user.photo2.data = Buffer.from(encImg2, 'base64');
-            user.photo2.contentType='image/png';
-            user.photo3.data = Buffer.from(encImg3, 'base64');
-            user.photo3.contentType='image/png';
-            user.photo4.data = Buffer.from(encImg4, 'base64');
-            user.photo4.contentType='image/png';
+                if(req.files == undefined){
 
-            
-            user.save((err,doc)=>{
-                    if(!err)
-                      res.status(201).send({
-                          message:"Register Successfully"
-                      });
-                    else{
-                        if(err){
-                          unlinkImage(req.files.length)
-                          res.status(422).send(err);
-                        }else{
-                            return next(err); 
+                    res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
 
-                        }
+                } 
+                else if (req.files.length < 4) {
+                    return res.send("Must upload 4 photos");
+                
+                }else {
+
+                function unlinkImage(n){
+                    for(let i=0;i<n;i++){ 
+                        var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
+                        console.log(filepath)
+                        fs.unlink(filepath,function(err,result){
+                            console.log(err);
+
+                        });
                     }
-    });
+                        
+                } 
+                var newImg1 = fs.readFileSync(req.files[0].path);
+                var encImg1 = newImg1.toString('base64');
+                var newImg2 = fs.readFileSync(req.files[1].path);
+                var encImg2 = newImg2.toString('base64');
+                var newImg3 = fs.readFileSync(req.files[2].path);
+                var encImg3 = newImg3.toString('base64');
+                var newImg4 = fs.readFileSync(req.files[3].path);
+                var encImg4 = newImg4.toString('base64');
+                    
+                var user = new User();
+                user.firstName = req.body.firstName;
+                user.lastName = req.body.lastName;
+                user.email = req.body.email;
+                user.mobile = formatedphone;
+                user.category = req.body.category;
+                user.video = req.body.video;
+                user.gender = req.body.gender;
+                user.photo1.data = Buffer.from(encImg1, 'base64');
+                user.photo1.contentType='image/png';
+                user.photo2.data = Buffer.from(encImg2, 'base64');
+                user.photo2.contentType='image/png';
+                user.photo3.data = Buffer.from(encImg3, 'base64');
+                user.photo3.contentType='image/png';
+                user.photo4.data = Buffer.from(encImg4, 'base64');
+                user.photo4.contentType='image/png';
 
- }}});
+                
+                user.save((err,doc)=>{
+                        if(!err)
+                        res.status(201).send({
+                            message:"Register Successfully"
+                        });
+                        else{
+                            if(err){
+                            unlinkImage(req.files.length)
+                            res.status(422).send(err);
+                            }else{
+                                return next(err); 
+
+                            }}});
+                        }
+            }else{
+                return res.send("Enter valid Email");
+            }
+       }
+});
 }
 
 module.exports.fetchAllUser = async(req,res)=>{
@@ -131,7 +139,7 @@ module.exports.fetchAllUser = async(req,res)=>{
           "totalPages": Math.ceil(result.length / limit),
           "pageNumber": page,
           "pageSize": result.length,
-          "Users": result
+          "post": result
         };
     
         res.status(200).json(response);
@@ -165,89 +173,99 @@ module.exports.updateUser =(req,res)=>{
                              message:"this content cann't be empty"
                     });
             }
+            else if (req.files.length < 4) {
+                return res.send("Must upload 4 photos");
             
-            else {
-                let formatedphone = '';
-                let phone = req.body.mobile;
-                if (phone.charAt(0) == '0') {
-                    formatedphone = '+251' + phone.substring(1);
-                } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
-                    formatedphone = phone
+            }else {
+                var validEmail = validator.isEmail(req.body.email);
+                if(validEmail){
+                        let formatedphone = '';
+                        let phone = req.body.mobile;
+                        if (phone.charAt(0) == '0') {
+                            formatedphone = '+251' + phone.substring(1);
+                        } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
+                            formatedphone = phone
+                        }
+
+                        function unlinkImage(n){
+                            for(let i=0;i<n;i++){ 
+                                var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
+                                console.log(filepath)
+                                fs.unlink(filepath,function(err,result){
+                                    console.log(err);
+            
+                                });
+                            }
+                                
+                        } 
+                        
+                
+                        var newImg1 = fs.readFileSync(req.files[0].path);
+                        var encImg1 = newImg1.toString('base64');
+                        var newImg2 = fs.readFileSync(req.files[1].path);
+                        var encImg2 = newImg2.toString('base64');
+                        var newImg3 = fs.readFileSync(req.files[2].path);
+                        var encImg3 = newImg3.toString('base64');
+                        var newImg4 = fs.readFileSync(req.files[3].path);
+                        var encImg4 = newImg4.toString('base64');
+                    
+                    
+                        User.findByIdAndUpdate(req.params.id,{
+                            $set:{
+                                firstName:req.body.firstName,
+                                lastName:req.body.lastName,
+                                email:req.body.email,
+                                mobile:formatedphone,
+                                category:req.body.category,
+                                video:req.body.video,
+                                gender:req.body.gender,
+                                photos1:{
+                                    data:Buffer.from(encImg1, 'base64'),
+                                    contentType:'image/png'
+                                },
+                                photos2:{
+                                    data:Buffer.from(encImg2, 'base64'),
+                                    contentType:'image/png'
+                                },
+                                photos3:{
+                                    data:Buffer.from(encImg3, 'base64'),
+                                    contentType:'image/png'
+                                },
+                                photos4:{
+                                    data:Buffer.from(encImg4, 'base64'),
+                                    contentType:'image/png'
+                                }
+                            }
+                        }, {new: true})
+                        .then(user => {
+                            if(!user) {
+                                unlinkImage(req.files.length)
+                                return res.status(404).send({
+                                    message: " User not found with this " + req.params.id
+                                });
+                            }
+                            res.send({
+                                message:"Profile Update Successfully !!"
+                            });
+                        }).catch(err => {
+                            unlinkImage(req.files.length)
+                            if(err.kind === 'ObjectId') {
+                                return res.status(404).send({
+                                    message: "User not found with this " + req.params.id
+                                });                
+                            }
+                            return res.status(500).send({
+                                message: "Error updating User profile with id " + req.params.id
+                            });
+                    });
+
+                }else{
+                    return res.send("Enter valid Email");
+
                 }
 
-                function unlinkImage(n){
-                    for(let i=0;i<n;i++){ 
-                        var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
-                        console.log(filepath)
-                        fs.unlink(filepath,function(err,result){
-                            console.log(err);
-    
-                        });
-                    }
-                        
-                } 
-                
-        
-                var newImg1 = fs.readFileSync(req.files[0].path);
-                var encImg1 = newImg1.toString('base64');
-                var newImg2 = fs.readFileSync(req.files[1].path);
-                var encImg2 = newImg2.toString('base64');
-                var newImg3 = fs.readFileSync(req.files[2].path);
-                var encImg3 = newImg3.toString('base64');
-                var newImg4 = fs.readFileSync(req.files[3].path);
-                var encImg4 = newImg4.toString('base64');
-               
-              
-                User.findByIdAndUpdate(req.params.id,{
-                    $set:{
-                        firstName:req.body.firstName,
-                        lastName:req.body.lastName,
-                        email:req.body.email,
-                        mobile:formatedphone,
-                        category:req.body.category,
-                        video:req.body.video,
-                        gender:req.body.gender,
-                        photos1:{
-                            data:Buffer.from(encImg1, 'base64'),
-                            contentType:'image/png'
-                        },
-                        photos2:{
-                            data:Buffer.from(encImg2, 'base64'),
-                            contentType:'image/png'
-                        },
-                        photos3:{
-                            data:Buffer.from(encImg3, 'base64'),
-                            contentType:'image/png'
-                        },
-                        photos4:{
-                            data:Buffer.from(encImg4, 'base64'),
-                            contentType:'image/png'
-                        }
-                    }
-                }, {new: true})
-                .then(user => {
-                    if(!user) {
-                        unlinkImage(req.files.length)
-                        return res.status(404).send({
-                            message: " User not found with this " + req.params.id
-                        });
-                    }
-                    res.send({
-                           message:"Profile Update Successfully !!"
-                    });
-                }).catch(err => {
-                    unlinkImage(req.files.length)
-                    if(err.kind === 'ObjectId') {
-                        return res.status(404).send({
-                            message: "User not found with this " + req.params.id
-                        });                
-                    }
-                    return res.status(500).send({
-                        message: "Error updating User profile with id " + req.params.id
-                    });
-              });
-
- }}});
+            }
+}});
 
 }
 
@@ -388,7 +406,7 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
          "totalPages": Math.ceil(result.length / limit),
          "pageNumber": page,
          "pageSize": result.length,
-         "Users": result
+         "post": result
        };
    
        res.status(200).json(response);

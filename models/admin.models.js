@@ -49,12 +49,6 @@ var adminSchema = new mongoose.Schema({
     salSecrete: String
 });
 
-
-adminSchema.path('email').validate((val)=>{
-    emailRegex =/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    return emailRegex.test(val);
-},'Invalid e-mail');
-
 adminSchema.pre('save',function(next){
   if (this.isModified("password") || this.isNew) {
     bcrypt.genSalt(10,(err,salt)=>{

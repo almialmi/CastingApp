@@ -15,7 +15,7 @@ createdAt: {
     type: Date, 
     required: true, 
     default: Date.now, 
-    expires: 43200 
+    expires: 1000000 
 }
 });
 
