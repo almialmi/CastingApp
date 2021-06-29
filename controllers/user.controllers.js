@@ -291,7 +291,27 @@ module.exports.updateLike =(req,res)=>{
        if(err){
            res.send({error:err})
        }else{
-            if(user.like.indexOf(req.body.like) !== -1){
+           if(user.disLike.indexOf(req.body.like !== -1)){
+                User.findByIdAndUpdate(req.params.id,{
+                    $pull:{
+                        disLike:req.body.like
+                    },
+                    $push:{
+                        like:req.body.like
+                    }
+                },{new:true}).exec((err,result)=>{
+                    if(err){
+                        return res.status(422).json({error:err})
+                    }
+                    else{
+                        res.send({
+                            nomberOfLike : result.like.length
+                        })
+                    }
+                })
+               
+           }
+            else if(user.like.indexOf(req.body.like) !== -1){
                 console.log('exist')
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
@@ -324,13 +344,8 @@ module.exports.updateLike =(req,res)=>{
                     }
                 })
         }
-           
-       }
-
-
+    }
     })
-        
-
 }
 
 module.exports.updateDisLike =(req,res)=>{
@@ -338,7 +353,27 @@ module.exports.updateDisLike =(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-             if(user.disLike.indexOf(req.body.disLike) !== -1){
+            if(user.like.indexOf(req.body.disLike !== -1)){
+                User.findByIdAndUpdate(req.params.id,{
+                    $pull:{
+                        like:req.body.disLike
+                    },
+                    $push:{
+                        disLike:req.body.disLike
+                     }
+                },{new:true}).exec((err,result)=>{
+                    if(err){
+                        return res.status(422).json({error:err})
+                    }
+                    else{
+                        res.send({
+                            nomberOfDislike : result.disLike.length
+                        })
+                    }
+                })
+               
+           }
+            else if(user.disLike.indexOf(req.body.disLike) !== -1){
                  console.log('exist')
                  User.findByIdAndUpdate(req.params.id,{
                      $pull:{
