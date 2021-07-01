@@ -63,7 +63,27 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-             if(comp.like.indexOf(req.body.like) !== -1){
+            if(comp.disLike.indexOf(req.body.like) !== -1){
+                ComputationPost.findByIdAndUpdate(req.params.id,{
+                    $pull:{
+                        disLike:req.body.like
+                    },
+                    $push:{
+                        like:req.body.like
+                     }
+                },{new:true}).exec((err,result)=>{
+                    if(err){
+                        return res.status(422).json({error:err})
+                    }
+                    else{
+                        res.send({
+                            nomberOfLike : result.like.length
+                        })
+                    }
+                })
+
+            }
+            else if(comp.like.indexOf(req.body.like) !== -1){
                  console.log('exist')
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $pull:{
@@ -110,7 +130,27 @@ module.exports.updateNumberOfDisLikes = async(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-             if(comp.disLike.indexOf(req.body.disLike) !== -1){
+            if(comp.like.indexOf(req.body.disLike) !== -1){
+                ComputationPost.findByIdAndUpdate(req.params.id,{
+                    $pull:{
+                        like:req.body.disLike
+                    },
+                    $push:{
+                        disLike:req.body.disLike
+                     }
+                },{new:true}).exec((err,result)=>{
+                    if(err){
+                        return res.status(422).json({error:err})
+                    }
+                    else{
+                        res.send({
+                            nomberOfDislike : result.disLike.length
+                        })
+                    }
+                })
+
+            }
+            else if(comp.disLike.indexOf(req.body.disLike) !== -1){
                  console.log('exist')
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $pull:{
@@ -205,7 +245,7 @@ module.exports.fillJugePoints =(req,res)=>{
 }
 
 module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
-    const sort = { like:-1,jugePoints:-1};
+    const sort = { jugePoints:-1,like:-1};
     ComputationPost.find()
                    .sort(sort)
                    .populate('user')
@@ -222,7 +262,7 @@ module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
 }
 
 module.exports.notifyBestThreeWinners =(req,res)=>{
-    const sort = { like:-1,jugePoints:-1};
+    const sort = { jugePoints:-1,like:-1};
     const limit = 3;
     ComputationPost.find()
                    .sort(sort)
