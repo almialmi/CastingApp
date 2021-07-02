@@ -21,7 +21,11 @@ var computationsSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"Admin"
     }],
-    jugePoints:{
+    jugePoints:[{
+        type:Number,
+        default:0
+    }],
+    sumOfJugePoints:{
         type:Number,
         default:0
     }

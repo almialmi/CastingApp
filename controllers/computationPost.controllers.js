@@ -30,10 +30,11 @@ module.exports.showComputationPosts=async(req,res)=>{
     
         let result = {};
         let numOfStaffs;
+        let eventForComputation = req.params.eventForComputation;
 
         
         numOfStaffs = await ComputationPost.countDocuments({});
-        result = await ComputationPost.find({__v:0}) 
+        result = await ComputationPost.find({eventForComputation:eventForComputation},{__v:0}) 
                               .populate('user')
                               .populate('eventForComputation')
                               .skip(offset) 
@@ -213,31 +214,43 @@ module.exports.deletePost =(req,res)=>{
 }
 
 module.exports.fillJugePoints =(req,res)=>{
-   
-    ComputationPost.findByIdAndUpdate(req.params.id, {
-        $set:{
-            jugePoints:req.body.jugePoints
+    let comp;
+    ComputationPost.findById(req.params.id, function (err, com) {
+        if (err){
+            console.log(err);
         }
+        else{
+            comp = com.sumOfJugesPoint
+        }
+    });
+
+    const sumOfJugesPoint = comp + req.body.jugePoints
+
+    ComputationPost.findByIdAndUpdate(req.params.id, {
+          $push:{
+                jugePoints:req.body.jugePoints
+             },
+          sumOfJugesPoint:sumOfJugesPoint
         
     }, {new: true})
     .then(post => {
         if(!post) {
             return res.status(404).send({
-                message: "Post not found with id " + req.params.id
+                message: "Computation not found with id " + req.params.id
             });
         }
         res.status(200).send({
-            message:"point update:" + " " + req.body.jugePoints,
+            message:"set point sucessfully!!",
             success:true
         });
     }).catch(err => {
         if(err.kind === 'ObjectId') {
             return res.status(404).send({
-                message: "post not found with id " + req.params.id
+                message: "Computation not found with id " + req.params.id
             });                
         }
         return res.status(500).send({
-            message: "Error updating post with id " + req.params.id
+            message: "Error updating Computation with id " + req.params.id
         });
     });
 
@@ -245,8 +258,9 @@ module.exports.fillJugePoints =(req,res)=>{
 }
 
 module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
-    const sort = { jugePoints:-1,like:-1};
-    ComputationPost.find()
+    let eventForComputation = req.params.eventForComputation;
+    const sort = { sumOfJugesPoint:-1,like:-1};
+    ComputationPost.find({eventForComputation:eventForComputation},{__v:0})
                    .sort(sort)
                    .populate('user')
                    .populate('eventForComputation')
@@ -262,9 +276,10 @@ module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
 }
 
 module.exports.notifyBestThreeWinners =(req,res)=>{
-    const sort = { jugePoints:-1,like:-1};
+    let eventForComputation = req.params.eventForComputation;
+    const sort = { sumOfJugesPoint:-1,like:-1};
     const limit = 3;
-    ComputationPost.find()
+    ComputationPost.find({eventForComputation:eventForComputation},{__v:0})
                    .sort(sort)
                    .populate('user')
                    .populate('eventForComputation')

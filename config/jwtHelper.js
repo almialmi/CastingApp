@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+
 module.exports.verifyJwtToken = ( req , res , next) => {
-    var token= req.cookies.token || '';
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+    //console.log(req.cookies.token);
    /* if('authorization' in req.headers)
     token = req.headers['authorization'].split(' ')[1];*/
 

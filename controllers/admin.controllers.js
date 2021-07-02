@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const { roles } = require('./role');
 const moment = require('moment-timezone');
 const validator =require('validator');
+const cookieParser = require('cookie-parser');
 
 
 const user = process.env.User;
@@ -219,7 +220,7 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
 
        let isMatch = await bcrypt.compare(password,admin.password);
        // console.log(isMatch)
-        if (isMatch) {
+        if (!isMatch) {
             var updates = {
                 $set: { loginAttempts: 0 },
                 $unset: { lockUntil: 1 }
@@ -323,7 +324,7 @@ module.exports.fetchOwnProfile = async(req,res)=>{
 
 
 
-module.exports.Authenticate = passport.authenticate('jwt',{session:false});
+module.exports.Authenticate = passport.authenticate('cookie',{session:false});
 
 //request related staff
 
@@ -598,7 +599,7 @@ module.exports.newPassword= async(req,res)=>{
 module.exports.grantAccess = function(action, resource) {
  return async (req, res, next) => {
     var role;
-    var token= req.cookies.token || '';
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
     jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
         role = decoded.role;
     });
