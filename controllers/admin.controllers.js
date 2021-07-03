@@ -44,6 +44,27 @@ const sendConfirmationEmail = (name, email, confirmationCode) => {
     }).catch(err => console.log(err));
   };
 
+global.__basedir = __dirname;
+
+  //multer upload storage
+const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+          cb(null, __basedir + '/adminProfilePicStorage/')
+      },
+      filename: (req, file, cb) => {
+          cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
+      }
+  
+  });
+  
+const uploadStorage = multer({storage:storage,
+      fileFilter : function(req, file, callback) { //file filter
+      if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
+          return callback(new Error('Wrong extension type'));
+      }
+      callback(null, true);
+}}).single('photo');
+
 module.exports.adminRegister = (req,res,next)=>{
     var validEmail = validator.isEmail(req.body.email);
     if(validEmail){ 
@@ -146,30 +167,54 @@ module.exports.verifyUser = (req, res, next) => {
   };
 
 
+
+
 module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
-    var validEmail = validator.isEmail(req.body.email);
-    if(validEmail){
-        if(!req.body.email && !req.body.password){
-            return res.status(400).send({
-                     message:"this content cann't be empty"
-            });
-        }
-        
-        const salt = await bcrypt.genSaltSync(10);
-        const password = await req.body.password;
-        
-        Admin.findByIdAndUpdate(req.params.id,{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        id = decoded.admin_id;
+    });
+
+    if(!req.body.email && !req.body.password && !req.file){
+        Admin.findByIdAndUpdate(id,{
             $set:{
-                userName:req.body.userName,
-                email:req.body.email,
-                password:bcrypt.hashSync(password, salt)
-    
+                userName:req.body.userName
             }
         }, {new: true})
         .then(admin => {
             if(!admin) {
                 return res.status(404).send({
-                    message: "Admin or NormalUser not found with this " + req.params.id
+                    message: "Admin or NormalUser not found with this " + id
+                });
+            }
+            res.send({
+                   message:"UserName Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Admin or NormalUser not found with this " + id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Admin or NormalUser profile with id " + id
+            });
+      });
+    }
+    else if(!req.body.email && !req.body.userName && !req.file){
+        const salt = await bcrypt.genSaltSync(10);
+        const password = await req.body.password;
+        Admin.findByIdAndUpdate(id,{
+            $set:{
+                password:bcrypt.hashSync(password, salt)
+            }
+        }, {new: true})
+        .then(admin => {
+            if(!admin) {
+                return res.status(404).send({
+                    message: "Admin or NormalUser not found with this " + id
                 });
             }
             res.send({
@@ -178,18 +223,100 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
         }).catch(err => {
             if(err.kind === 'ObjectId') {
                 return res.status(404).send({
-                    message: "Admin or NormalUser not found with this " + req.params.id
+                    message: "Admin or NormalUser not found with this " + id
                 });                
             }
             return res.status(500).send({
-                message: "Error updating Admin or NormalUser profile with id " + req.params.id
+                message: "Error updating Admin or NormalUser profile with id " + id
             });
       });
-
-    }else{
-        return res.send("Enter valid Email...");
+        
     }
+    else if(!req.body.password && !req.body.userName && !req.file){
+        var validEmail = validator.isEmail(req.body.email);
+        if(validEmail){   
+            Admin.findByIdAndUpdate(id,{
+                $set:{
+                    email:req.body.email
+                }
+            }, {new: true})
+            .then(admin => {
+                if(!admin) {
+                    return res.status(404).send({
+                        message: "Admin or NormalUser not found with this " + id
+                    });
+                }
+                res.send({
+                       message:"Email Update Successfully !!"
+                });
+            }).catch(err => {
+                if(err.kind === 'ObjectId') {
+                    return res.status(404).send({
+                        message: "Admin or NormalUser not found with this " + id
+                    });                
+                }
+                return res.status(500).send({
+                    message: "Error updating Admin or NormalUser profile with id " + id
+                });
+          });
     
+        }else{
+            return res.send("Enter valid Email...");
+        }
+    }
+    else if(!req.body.password && !req.body.userName && !req.body.email){ 
+        uploadStorage(req, res, (err) => {
+            if(err){
+                console.log(err)
+            } else {
+                if(req.file == undefined){
+    
+                    res.status(404).json({ success: false, msg: 'File is undefined!',file: `adminProfilePicStorage/${req.file}`});
+    
+                }    
+                else {
+                    function unlinkImage(){
+                        var filepath= path.resolve(__basedir ,'./adminProfilePicStorage/' + req.file.filename);
+                        fs.unlink(filepath,function(err,result){
+                            console.log(err);
+                        });
+                      }
+                    var newImg = fs.readFileSync(req.file.path);
+                    var encImg = newImg.toString('base64');
+                    Admin.findByIdAndUpdate(id,{
+                        $set:{
+                            profilePic:{
+                                data:Buffer.from(encImg, 'base64'),
+                                contentType:'image/png'
+                            }
+                        }
+                    }, {new: true})
+                    .then(admin => {
+                        if(!admin) {
+                            unlinkImage()
+                            return res.status(404).send({
+                                message: " User not found with this " + id
+                            });
+                        }
+                        res.send({
+                               message:"Profile Pic Update Successfully !!"
+                        });
+                    }).catch(err => {
+                        unlinkImage()
+                        if(err.kind === 'ObjectId') {
+                            return res.status(404).send({
+                                message: "User not found with this " + id
+                            });                
+                        }
+                        return res.status(500).send({
+                            message: "Error updating User with id " + id
+                        });
+                  });
+    
+     }}});
+    }else{
+        return res.send("Choose what you want to update");
+    } 
 }
 
 module.exports.adminAndNormalUserLogin = async(req , res , next) => {
@@ -635,28 +762,9 @@ module.exports.grantAccess = function(action, resource) {
 }
 
 
-global.__basedir = __dirname;
 
-//multer upload storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, __basedir + '/adminProfilePicStorage/')
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
-    }
 
-});
-
-const uploadStorage = multer({storage:storage,
-    fileFilter : function(req, file, callback) { //file filter
-    if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
-        return callback(new Error('Wrong extension type'));
-    }
-    callback(null, true);
-}}).single('photo');
-
-module.exports.updateProfilePic = (req,res)=>{
+/*module.exports.updateProfilePic = (req,res)=>{
     var id;
     var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
         //console.log(token);
@@ -714,5 +822,5 @@ module.exports.updateProfilePic = (req,res)=>{
 
  }}});
 
-}
+}*/
 

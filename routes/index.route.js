@@ -35,7 +35,7 @@ router.post('/registerNormalUser',ctrlAdmin.normalUserRegister);
 router.get("/verfiyEmail/:confirmationCode",ctrlAdmin.verifyUser);
 
 //update profile 
-router.put('/updateAdminAndNormalUserProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateOwn','profile'),ctrlAdmin.updateAdminAndNormalUserProfile);
+router.put('/updateAdminAndNormalUserProfile',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateOwn','profile'),ctrlAdmin.updateAdminAndNormalUserProfile);
 
 //Admin and normal user login
 router.post('/adminAndNormalUserLogin',ctrlAdmin.adminAndNormalUserLogin);
@@ -48,7 +48,7 @@ router.get('/fetchNormalUserForAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.grantAc
 router.get('/fetchOwnProfile',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readOwn','profile'),ctrlAdmin.fetchOwnProfile);
 
 // add profile pic 
-router.get('/updateProfilePic',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateOwn','profile'),ctrlAdmin.updateProfilePic);
+//router.put('/updateProfilePic',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateOwn','profile'),ctrlAdmin.updateProfilePic);
 
 
 //user section
