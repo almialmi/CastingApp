@@ -45,7 +45,11 @@ router.get('/fetchNormalUserForAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.grantAc
 
 //fetch Admin
 
-router.get('/fetchOwnProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readOwn','profile'),ctrlAdmin.fetchOwnProfile);
+router.get('/fetchOwnProfile',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readOwn','profile'),ctrlAdmin.fetchOwnProfile);
+
+// add profile pic 
+router.get('/updateProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateOwn','profile'),ctrlAdmin.updateProfilePic);
+
 
 //user section
 //register user 

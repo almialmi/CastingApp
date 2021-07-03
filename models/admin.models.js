@@ -37,6 +37,10 @@ var adminSchema = new mongoose.Schema({
         default:'NormalUser',
         enum: ["NormalUser", "Admin"]
     },
+    profilePic:{
+        data:Buffer,
+        contentType:String
+    },
     loginAttempts:{
         type:Number,
         required:true,

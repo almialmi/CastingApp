@@ -11,6 +11,9 @@ const { roles } = require('./role');
 const moment = require('moment-timezone');
 const validator =require('validator');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 
 
 const user = process.env.User;
@@ -220,7 +223,7 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
 
        let isMatch = await bcrypt.compare(password,admin.password);
        // console.log(isMatch)
-        if (!isMatch) {
+        if (isMatch) {
             var updates = {
                 $set: { loginAttempts: 0 },
                 $unset: { lockUntil: 1 }
@@ -310,13 +313,23 @@ module.exports.fetchNormalUserForAdmin = async(req,res)=>{
 
 module.exports.fetchOwnProfile = async(req,res)=>{
     try {
-        Admin.findById(req.params.id, function (err, admin) {
+        var id;
+        var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+        jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+            id = decoded.admin_id;
+        });
+        Admin.findById(id, function (err, admin) {
             if (err){
                 res.status(401).send(err)
             }
             else{
                 res.status(200).send({
-                    message: admin
+                    message:{
+                        "_id":admin._id,
+                        "userName":admin.userName,
+                        "email":admin.email
+                    } 
                 })
             }
         })
@@ -621,4 +634,85 @@ module.exports.grantAccess = function(action, resource) {
  }
 }
 
+
+global.__basedir = __dirname;
+
+//multer upload storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, __basedir + '/adminProfilePicStorage/')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
+    }
+
+});
+
+const uploadStorage = multer({storage:storage,
+    fileFilter : function(req, file, callback) { //file filter
+    if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
+        return callback(new Error('Wrong extension type'));
+    }
+    callback(null, true);
+}}).single('photo');
+
+module.exports.updateProfilePic = (req,res)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        id = decoded.admin_id;
+    });
+    
+    uploadStorage(req, res, (err) => {
+        if(err){
+            console.log(err)
+        } else {
+            if(req.file == undefined){
+
+                res.status(404).json({ success: false, msg: 'File is undefined!',file: `adminProfilePicStorage/${req.file}`});
+
+            }    
+            else {
+                function unlinkImage(){
+                    var filepath= path.resolve(__basedir ,'./adminProfilePicStorage/' + req.file.filename);
+                    fs.unlink(filepath,function(err,result){
+                        console.log(err);
+                    });
+                  }
+                var newImg = fs.readFileSync(req.file.path);
+                var encImg = newImg.toString('base64');
+                Admin.findByIdAndUpdate(id,{
+                    $set:{
+                        profilePic:{
+                            data:Buffer.from(encImg, 'base64'),
+                            contentType:'image/png'
+                        }
+                    }
+                }, {new: true})
+                .then(admin => {
+                    if(!admin) {
+                        unlinkImage()
+                        return res.status(404).send({
+                            message: " User not found with this " + id
+                        });
+                    }
+                    res.send({
+                           message:"Profile Pic Update Successfully !!"
+                    });
+                }).catch(err => {
+                    unlinkImage()
+                    if(err.kind === 'ObjectId') {
+                        return res.status(404).send({
+                            message: "User not found with this " + id
+                        });                
+                    }
+                    return res.status(500).send({
+                        message: "Error updating User with id " + id
+                    });
+              });
+
+ }}});
+
+}
 

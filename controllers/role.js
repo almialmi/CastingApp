@@ -15,7 +15,6 @@ ac.grant("NormalUser")
   .readAny("computationalPost")
   .readAny("user")
 
- 
 ac.grant("Admin")
   .extend("NormalUser")
   .readAny("profile")
