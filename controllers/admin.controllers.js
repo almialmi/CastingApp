@@ -310,12 +310,16 @@ module.exports.fetchNormalUserForAdmin = async(req,res)=>{
 
 module.exports.fetchOwnProfile = async(req,res)=>{
     try {
-        const id = req.params.id;
-        const admin = await Admin.findById(id);
-        if (!admin) return next(new Error('User does not exist'));
-        res.status(200).send({
-           message: user
-        });
+        Admin.findById(req.params.id, function (err, admin) {
+            if (err){
+                res.status(401).send(err)
+            }
+            else{
+                res.status(200).send({
+                    message: admin
+                })
+            }
+        })
        } catch (error) {
         next(error)
     }
