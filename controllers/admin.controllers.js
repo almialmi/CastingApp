@@ -177,7 +177,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
         id = decoded.admin_id;
     });
 
-    if(!req.body.email && !req.body.password && !req.file){
+    if(!req.body.email && !req.body.password){
         Admin.findByIdAndUpdate(id,{
             $set:{
                 userName:req.body.userName
@@ -203,7 +203,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
             });
       });
     }
-    else if(!req.body.email && !req.body.userName && !req.file){
+    else if(!req.body.email && !req.body.userName){
         const salt = await bcrypt.genSaltSync(10);
         const password = await req.body.password;
         Admin.findByIdAndUpdate(id,{
@@ -218,7 +218,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
                 });
             }
             res.send({
-                   message:"Profile Update Successfully !!"
+                   message:"Password Update Successfully !!"
             });
         }).catch(err => {
             if(err.kind === 'ObjectId') {
@@ -232,7 +232,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
       });
         
     }
-    else if(!req.body.password && !req.body.userName && !req.file){
+    else if(!req.body.password && !req.body.userName){
         var validEmail = validator.isEmail(req.body.email);
         if(validEmail){   
             Admin.findByIdAndUpdate(id,{
@@ -263,57 +263,6 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
         }else{
             return res.send("Enter valid Email...");
         }
-    }
-    else if(!req.body.password && !req.body.userName && !req.body.email){ 
-        uploadStorage(req, res, (err) => {
-            if(err){
-                console.log(err)
-            } else {
-                if(req.file == undefined){
-    
-                    res.status(404).json({ success: false, msg: 'File is undefined!',file: `adminProfilePicStorage/${req.file}`});
-    
-                }    
-                else {
-                    function unlinkImage(){
-                        var filepath= path.resolve(__basedir ,'./adminProfilePicStorage/' + req.file.filename);
-                        fs.unlink(filepath,function(err,result){
-                            console.log(err);
-                        });
-                      }
-                    var newImg = fs.readFileSync(req.file.path);
-                    var encImg = newImg.toString('base64');
-                    Admin.findByIdAndUpdate(id,{
-                        $set:{
-                            profilePic:{
-                                data:Buffer.from(encImg, 'base64'),
-                                contentType:'image/png'
-                            }
-                        }
-                    }, {new: true})
-                    .then(admin => {
-                        if(!admin) {
-                            unlinkImage()
-                            return res.status(404).send({
-                                message: " User not found with this " + id
-                            });
-                        }
-                        res.send({
-                               message:"Profile Pic Update Successfully !!"
-                        });
-                    }).catch(err => {
-                        unlinkImage()
-                        if(err.kind === 'ObjectId') {
-                            return res.status(404).send({
-                                message: "User not found with this " + id
-                            });                
-                        }
-                        return res.status(500).send({
-                            message: "Error updating User with id " + id
-                        });
-                  });
-    
-     }}});
     }else{
         return res.send("Choose what you want to update");
     } 
@@ -371,7 +320,7 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
              }
       
         res.cookie('token', token, {
-            expires: new Date(Date.now() + 300000),
+            expires: new Date(Date.now() + 300000000000000),
             secure: false, 
             httpOnly: true,
         });
@@ -452,11 +401,10 @@ module.exports.fetchOwnProfile = async(req,res)=>{
             }
             else{
                 res.status(200).send({
-                    message:{
                         "_id":admin._id,
                         "userName":admin.userName,
-                        "email":admin.email
-                    } 
+                        "email":admin.email,
+                        "profilePic":admin.profilePic
                 })
             }
         })
@@ -764,7 +712,7 @@ module.exports.grantAccess = function(action, resource) {
 
 
 
-/*module.exports.updateProfilePic = (req,res)=>{
+module.exports.updateProfilePic = (req,res)=>{
     var id;
     var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
         //console.log(token);
@@ -822,5 +770,5 @@ module.exports.grantAccess = function(action, resource) {
 
  }}});
 
-}*/
+}
 
