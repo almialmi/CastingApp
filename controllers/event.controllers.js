@@ -28,7 +28,10 @@ const uploadStorage = multer({storage:storage,
 module.exports.registerEvent =(req,res,next)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            console.log(err)
+            //console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             
             //console.log(req.file.filename);
@@ -117,22 +120,158 @@ module.exports.showEvents= async(req,res)=>{
 
 }
 
-module.exports.updateEvent =(req,res)=>{
+module.exports.updateEventProfile = async(req,res)=>{
+    if(!req.body.description && !req.body.category && !req.body.startDate && !req.body.endDate){
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+            $set:{
+                name:req.body.name
+            }
+        }, {new: true})
+        .then(eve => {
+            if(!eve) {
+                return res.status(404).send({
+                    message: "Evnet not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"Event Name Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Event profile with id " + req.params.id
+            });
+      });
+    }
+    else if(!req.body.name && !req.body.description && !req.body.startDate && !req.body.endDate){
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+            $set:{
+               category:req.body.category
+            }
+        }, {new: true})
+        .then(eve => {
+            if(!eve) {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"Event category Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Event profile with id " + req.params.id
+            });
+      });
+        
+    }
+    else if(!req.body.name && !req.body.category && !req.body.startDate && !req.body.endDate){
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+            $set:{
+                description:req.body.description
+            }
+        }, {new: true})
+        .then(eve => {
+            if(!eve) {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"Event description update successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Event profile with id " + req.params.id
+            });
+      });
+    }
+    else if(!req.body.name && !req.body.category && !req.body.description && !req.body.endDate){
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+            $set:{
+                startDate:req.body.startDate
+            }
+        }, {new: true})
+        .then(eve => {
+            if(!eve) {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"Event start date update successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Event profile with id " + req.params.id
+            });
+      });
+        
+    }
+    else if(!req.body.name && !req.body.category && !req.body.description && !req.body.endDate){
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+            $set:{
+                endDate:req.body.endDate
+            }
+        }, {new: true})
+        .then(eve => {
+            if(!eve) {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"Event end date update successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Event profile with id " + req.params.id
+            });
+      });
+        
+    }
+    else{
+        return res.send("Choose what you want to update");
+    } 
+}
+
+module.exports.updateEventProfilePic =(req,res)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            console.log(err)
+            //console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             if(req.file == undefined){
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `eventPhotoStorage/${req.file}`});
 
             }
-            else if (!req.body.name && !req.body.description && !req.body.category && !req.body.photo && !req.body.startDate && !req.body.endDate){
-                return res.status(400).send({
-                    message:"All this content cann't be empty"
-                });
-            }
-            
             else {
                 function unlinkImage(){
                     var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
@@ -145,26 +284,21 @@ module.exports.updateEvent =(req,res)=>{
                 var encImg = newImg.toString('base64');
                 EventForComputation.findByIdAndUpdate(req.params.id,{
                     $set:{
-                        name:req.body.name,
-                        description:req.body.description,
-                        category: req.body.category,
                         photo:{
                             data:Buffer.from(encImg, 'base64'),
                             contentType:'image/png'
-                        },
-                        startDate : req.body.startDate,
-                        endDate :req.body.endDate
+                        }
                     }
                 }, {new: true})
-                .then(cat => {
-                    if(!cat) {
+                .then(eve => {
+                    if(!eve) {
                         unlinkImage()
                         return res.status(404).send({
                             message: " Event not found with this " + req.params.id
                         });
                     }
                     res.send({
-                           message:"Event Update Successfully !!"
+                           message:"Event Profile Update Successfully !!"
                     });
                 }).catch(err => {
                     unlinkImage()

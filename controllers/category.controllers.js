@@ -28,7 +28,10 @@ const uploadStorage = multer({storage:storage,
 module.exports.registerCategory =(req,res,next)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            console.log(err)
+            //console.log(err)
+           if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             
             //console.log(req.file.filename);
@@ -78,23 +81,46 @@ module.exports.showCategory =(req,res)=>{
         }
     });
 }
+module.exports.updateCatagoryProfile = (req,res)=>{
+    Category.findByIdAndUpdate(req.params.id,{
+        $set:{
+            name:req.body.name
+        }
+    }, {new: true})
+    .then(cat => {
+        if(!cat) {
+            return res.status(404).send({
+                message: "Catagory not found with this " + req.params.id
+            });
+        }
+        res.send({
+               message:"Catagory Name Update Successfully !!"
+        });
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "Catagory not found with this " + req.params.id
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating Category profile with id " + req.params.id
+        });
+  });
+}
 
-module.exports.upadteCategoty= (req,res)=>{
+module.exports.upadteCategotyProfilePic= (req,res)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            console.log(err)
+            //console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             if(req.file == undefined){
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `categoryPhotoStorage/${req.file}`});
 
-            }
-            else if (!req.body.name){
-                return res.status(400).send({
-                    message:"Name content cann't be empty"
-                });
-            }
-            
+            } 
             else {
                 function unlinkImage(){
                     var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.file.filename);
@@ -106,7 +132,6 @@ module.exports.upadteCategoty= (req,res)=>{
                 var encImg = newImg.toString('base64');
                 Category.findByIdAndUpdate(req.params.id,{
                     $set:{
-                        name:req.body.name,
                         photo:{
                             data:Buffer.from(encImg, 'base64'),
                             contentType:'image/png'

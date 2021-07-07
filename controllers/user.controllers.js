@@ -154,118 +154,209 @@ module.exports.fetchAllUser = async(req,res)=>{
 
 //update but some issue 
 
-module.exports.updateUser =(req,res)=>{
-  
-    uploadStorage(req, res, (err) => {
-        if(err){
-            console.log(err)
-            if(err.code === "LIMIT_UNEXPECTED_FILE"){
-                return res.send("Too many image to upload.");
+module.exports.updateUserProfile =(req,res)=>{
+    if (!req.body.lastName && !req.body.email && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                firstName:req.body.firstName
             }
-        } else {
-            if(req.files == undefined){
-
-                res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
-
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
             }
-            else if (!req.body.firstName && !req.body.lastName && !req.body.email && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
-                    return res.status(400).send({
-                             message:"this content cann't be empty"
-                    });
+            res.send({
+                   message:"User firstName Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
             }
-            else if (req.files.length < 4) {
-                return res.send("Must upload 4 photos");
-            
-            }else {
-                var validEmail = validator.isEmail(req.body.email);
-                if(validEmail){
-                        let formatedphone = '';
-                        let phone = req.body.mobile;
-                        if (phone.charAt(0) == '0') {
-                            formatedphone = '+251' + phone.substring(1);
-                        } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
-                            formatedphone = phone
-                        }
-
-                        function unlinkImage(n){
-                            for(let i=0;i<n;i++){ 
-                                var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
-                                console.log(filepath)
-                                fs.unlink(filepath,function(err,result){
-                                    console.log(err);
-            
-                                });
-                            }
-                                
-                        } 
-                        
-                
-                        var newImg1 = fs.readFileSync(req.files[0].path);
-                        var encImg1 = newImg1.toString('base64');
-                        var newImg2 = fs.readFileSync(req.files[1].path);
-                        var encImg2 = newImg2.toString('base64');
-                        var newImg3 = fs.readFileSync(req.files[2].path);
-                        var encImg3 = newImg3.toString('base64');
-                        var newImg4 = fs.readFileSync(req.files[3].path);
-                        var encImg4 = newImg4.toString('base64');
-                    
-                    
-                        User.findByIdAndUpdate(req.params.id,{
-                            $set:{
-                                firstName:req.body.firstName,
-                                lastName:req.body.lastName,
-                                email:req.body.email,
-                                mobile:formatedphone,
-                                category:req.body.category,
-                                video:req.body.video,
-                                gender:req.body.gender,
-                                photos1:{
-                                    data:Buffer.from(encImg1, 'base64'),
-                                    contentType:'image/png'
-                                },
-                                photos2:{
-                                    data:Buffer.from(encImg2, 'base64'),
-                                    contentType:'image/png'
-                                },
-                                photos3:{
-                                    data:Buffer.from(encImg3, 'base64'),
-                                    contentType:'image/png'
-                                },
-                                photos4:{
-                                    data:Buffer.from(encImg4, 'base64'),
-                                    contentType:'image/png'
-                                }
-                            }
-                        }, {new: true})
-                        .then(user => {
-                            if(!user) {
-                                unlinkImage(req.files.length)
-                                return res.status(404).send({
-                                    message: " User not found with this " + req.params.id
-                                });
-                            }
-                            res.send({
-                                message:"Profile Update Successfully !!"
-                            });
-                        }).catch(err => {
-                            unlinkImage(req.files.length)
-                            if(err.kind === 'ObjectId') {
-                                return res.status(404).send({
-                                    message: "User not found with this " + req.params.id
-                                });                
-                            }
-                            return res.status(500).send({
-                                message: "Error updating User profile with id " + req.params.id
-                            });
-                    });
-
-                }else{
-                    return res.send("Enter valid Email");
-
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
+    }
+    else if(!req.body.firstName && !req.body.email && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+        
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                lastName:req.body.lastName
+            }
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"User lastName Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
+    }
+    else if(!req.body.firstName && !req.body.lastName && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+        var validEmail = validator.isEmail(req.body.email);
+        if(validEmail){   
+            User.findByIdAndUpdate(id,{
+                $set:{
+                    email:req.body.email
                 }
-
+            }, {new: true})
+            .then(user => {
+                if(!user) {
+                    return res.status(404).send({
+                        message: "User not found with this " + id
+                    });
+                }
+                res.send({
+                       message:"User Email Update Successfully !!"
+                });
+            }).catch(err => {
+                if(err.kind === 'ObjectId') {
+                    return res.status(404).send({
+                        message: "User not found with this " + id
+                    });                
+                }
+                return res.status(500).send({
+                    message: "Error updating User profile with id " + id
+                });
+          });
+    
+        }else{
+            return res.send("Enter valid Email...");
+        }
+    }
+    else if(!req.body.firstName && !req.body.lastName && !req.body.email && !req.body.video && !req.body.category && !req.body.gender){
+        let formatedphone = '';
+        let phone = req.body.mobile;
+        if (phone.charAt(0) == '0') {
+            formatedphone = '+251' + phone.substring(1);
+        } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
+            formatedphone = phone
+        }
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                mobile:formatedphone,
             }
-}});
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                    message:"User mobile Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+        });
+    }
+    else if(!req.body.firstName && !req.body.lastName && !req.body.email && ! req.body.mobile && !req.body.category && !req.body.gender){
+        
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                video:req.body.video
+            }
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"User Video Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
+
+    }
+    else if(!req.body.firstName && !req.body.lastName && !req.body.email && ! req.body.mobile && !req.body.video && !req.body.gender){
+        
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                category:req.body.category
+            }
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"User Category Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
+    }
+    else if(!req.body.firstName && !req.body.lastName && !req.body.email && ! req.body.mobile && !req.body.category && !req.body.video){
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                gender:req.body.gender
+            }
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"User gender Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
+    }else{
+        return res.send("Choose what you want to update");
+
+    }
 
 }
 

@@ -86,7 +86,7 @@ module.exports.adminRegister = (req,res,next)=>{
                     admin.confirmationCode
                 );
                 res.send({
-                    message:"User was registered successfully! Please check your email"
+                    message:"Admin is registered successfully! Please check your email"
                 });
 
             }
@@ -121,7 +121,7 @@ module.exports.normalUserRegister = (req,res,next)=>{
             if(!err){
                 res.send({
                     message:
-                    "User was registered successfully! Please check your email",
+                    "User is registered successfully! Please check your email",
                 });
                 sendConfirmationEmail(
                     admin.userName,
@@ -457,9 +457,12 @@ module.exports.showOwnRequests= async(req,res)=>{
     
         let result = {};
         let numOfStaffs;
-        let applyer = req.params.applyer;
-        console.log(applyer);
-        
+        let applyer;
+        var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+        jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+            applyer = decoded.admin_id;
+        });
         numOfStaffs = await Request.countDocuments({});
         result = await Request.find({applyer:applyer},{__v:0}) 
                               .populate('applyer')
@@ -722,7 +725,10 @@ module.exports.updateProfilePic = (req,res)=>{
     
     uploadStorage(req, res, (err) => {
         if(err){
-            console.log(err)
+            //console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
         } else {
             if(req.file == undefined){
 
