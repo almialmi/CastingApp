@@ -213,47 +213,34 @@ module.exports.deletePost =(req,res)=>{
 
 }
 
-module.exports.fillJugePoints =(req,res)=>{
-    let comp;
-    ComputationPost.findById(req.params.id, function (err, com) {
-        if (err){
-            console.log(err);
+module.exports.fillJugePoints = (req,res)=>{
+
+    ComputationPost.findByIdAndUpdate(req.params.id,{
+        $push:{
+            jugePoints:req.body.jugePoints 
+         }
+    },{new:true}).exec((err,result)=>{
+        if(err){
+            return res.status(422).json({error:err})
         }
         else{
-            comp = com.sumOfJugesPoint
+            res.send({
+                message:"set judges points!!"
+            })
         }
-    });
+    })
+}
 
-    const sumOfJugesPoint = comp + req.body.jugePoints
-
-    ComputationPost.findByIdAndUpdate(req.params.id, {
-          $push:{
-                jugePoints:req.body.jugePoints
-             },
-          sumOfJugesPoint:sumOfJugesPoint
-        
-    }, {new: true})
-    .then(post => {
-        if(!post) {
-            return res.status(404).send({
-                message: "Computation not found with id " + req.params.id
-            });
-        }
-        res.status(200).send({
-            message:"set point sucessfully!!",
-            success:true
-        });
-    }).catch(err => {
-        if(err.kind === 'ObjectId') {
-            return res.status(404).send({
-                message: "Computation not found with id " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Error updating Computation with id " + req.params.id
-        });
-    });
-
+module.exports.sumOfJugesPoint = async(req,res)=>{
+    let sumOfPoints =0;
+    const { id } = req.params.id
+    const com = await ComputationPost.findOne({ id });
+    for(let i=0;i<com.jugePoints.length;i++){ 
+        sumOfPoints =sumOfPoints + com.jugePoints[i]  
+    }
+    return res.send({
+        message:sumOfPoints
+    })
 
 }
 
@@ -269,7 +256,7 @@ module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
                              res.send(err)
                         }else{
                              res.status(200).send({
-                                 message:result
+                                COmputationPosts:result
                              })
                     }
  });    
@@ -289,7 +276,7 @@ module.exports.notifyBestThreeWinners =(req,res)=>{
                              res.send(err)
                         }else{
                              res.status(200).send({
-                                 message:result
+                                COmputationPosts:result
                              })
                     }
  });   

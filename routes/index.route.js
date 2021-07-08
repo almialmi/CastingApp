@@ -8,7 +8,7 @@ const ctrlAdmin = require('../controllers/admin.controllers');
 const ctrlComputPost = require('../controllers/computationPost.controllers');
 const jwtHelper = require('../config/jwtHelper');
 
-//*******************************category section ********************************/
+//******************************* Category Section ********************************/
 
 //create category
 router.post('/createCategory',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('createAny','category'),ctrlCategory.registerCategory);
@@ -22,10 +22,13 @@ router.put('/upadteCategotyProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.gr
 // update category profile
 router.put('/updateCatagoryProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.updateCatagoryProfile)
 
+// update both profile and profiel pic
+router.put('/upadteBothCategotyProfilePicAndProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteBothCategotyProfilePicAndProfile); 
+
 //delete category 
 router.delete('/deleteCategory/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('deleteAny','category'),ctrlCategory.deleteCategory);
 
-//****************************** admin section ************************************/
+//****************************** Admin Section ************************************/
 //admin register
 router.post('/registerAdmin',ctrlAdmin.adminRegister);
 
@@ -52,7 +55,7 @@ router.get('/fetchOwnProfile',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('re
 router.put('/updateProfilePic',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateOwn','profile'),ctrlAdmin.updateProfilePic);
 
 
-//*************************user section *****************************************/
+//************************* User Section *****************************************/
 
 //register user 
 router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('createAny','user'),ctrlUser.userRegister);
@@ -64,8 +67,6 @@ router.get('/fetchAllUser',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readA
 //router.get('/fetchImage/:id',ctrlUser.fetchImage);
 
 //fetch based on category and gender
-
-// male
 router.get('/fetchMaleAndFemaleUser/:category/:gender',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','user'),ctrlUser.fetchUserMaleAndFemale);
 
 
@@ -81,7 +82,7 @@ router.put('/updateLike/:id',jwtHelper.verifyJwtToken,ctrlUser.updateLike);
 //update Dislike
 router.put('/updateDisLike/:id',jwtHelper.verifyJwtToken,ctrlUser.updateDisLike);
 
-/**************************** Request section  ********************************* */
+/**************************** Request Section  ********************************* */
 //create requests
 router.post('/createRequest',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('createOwn','request'),ctrlAdmin.createRequest);
 
@@ -103,7 +104,7 @@ router.put('/approveOrRejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.gran
 
 
 
-//**************************** event section **************************************/
+//**************************** Event Section **************************************/
 //register event
 router.post('/registerEvent',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('createAny','event'),ctrlEvent.registerEvent);
 
@@ -119,6 +120,9 @@ router.put('/updateEventProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grant
 // update event profile
 router.put('/updateEventProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfile);
 
+// for to update both profile and pic
+router.put('/updateBothEventProfilePicAndProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateBothEventProfilePicAndProfile);
+
 //delete events
 router.delete('/deleteEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('deleteAny','event'),ctrlEvent.deleteEvent);
 
@@ -127,8 +131,7 @@ router.get('/showRemaingTimeAndExpiredDate/:id',jwtHelper.verifyJwtToken,ctrlAdm
 
 
 
-//******************************************************************/
-//computation post section
+//************************ Computation Post ******************************************/
 //register comput posts
 router.post('/registerComputationPost',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('createAny','computationalPost'),ctrlComputPost.addComputationPost);
 
@@ -147,6 +150,9 @@ router.delete('/deleteComputationPost/:id',jwtHelper.verifyJwtToken,ctrlAdmin.gr
 //fill juge points
 router.put('/fillJugePoints/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','computationalPost'),ctrlComputPost.fillJugePoints);
 
+// get sum of judges points
+router.get('/sumOfJugesPoint/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','computationalPost'),ctrlComputPost.sumOfJugesPoint);
+
 //to show posts based on number of likes and juge points
 router.get('/higherToLowerLikes/:eventForComputation',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','computationalPost'),ctrlComputPost.orderByHighestLikeToTheEvent);
 
@@ -154,7 +160,7 @@ router.get('/higherToLowerLikes/:eventForComputation',jwtHelper.verifyJwtToken,c
 router.get('/showBestThreeWinners/:eventForComputation',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','computationalPost'),ctrlComputPost.notifyBestThreeWinners);
 
 
-//******************************************************************/
+//************************ Forgot Password ******************************************/
 //forgot password
 router.post('/resetPassword',ctrlAdmin.forgotPassword);
 

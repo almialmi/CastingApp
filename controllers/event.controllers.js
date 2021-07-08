@@ -315,6 +315,68 @@ module.exports.updateEventProfilePic =(req,res)=>{
  }}});
 
 }
+
+module.exports.updateBothEventProfilePicAndProfile =(req,res)=>{
+    uploadStorage(req, res, (err) => {
+        if(err){
+            //console.log(err)
+            if(err.code === "LIMIT_UNEXPECTED_FILE"){
+                return res.send("Too many image to upload.");
+            }
+        } else {
+            if(req.file == undefined){
+
+                res.status(404).json({ success: false, msg: 'File is undefined!',file: `eventPhotoStorage/${req.file}`});
+
+            }
+            else {
+                function unlinkImage(){
+                    var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
+                    fs.unlink(filepath,function(err,result){
+                        console.log(err);
+                    });
+                  }
+    
+                var newImg = fs.readFileSync(req.file.path);
+                var encImg = newImg.toString('base64');
+                EventForComputation.findByIdAndUpdate(req.params.id,{
+                    $set:{
+                        name:req.body.name,
+                        category:req.body.category,
+                        description:req.body.description,
+                        photo:{
+                            data:Buffer.from(encImg, 'base64'),
+                            contentType:'image/png'
+                        },
+                        startDate:req.body.startDate,
+                        endDate:req.body.endDate
+                    }
+                }, {new: true})
+                .then(eve => {
+                    if(!eve) {
+                        unlinkImage()
+                        return res.status(404).send({
+                            message: " Event not found with this " + req.params.id
+                        });
+                    }
+                    res.send({
+                           message:"Event Profile Update Successfully !!"
+                    });
+                }).catch(err => {
+                    unlinkImage()
+                    if(err.kind === 'ObjectId') {
+                        return res.status(404).send({
+                            message: "Event not found with this " + req.params.id
+                        });                
+                    }
+                    return res.status(500).send({
+                        message: "Error updating Event with id " + req.params.id
+                    });
+              });
+
+ }}});
+
+}
 module.exports.deleteEvent=(req,res)=>{
     //var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.params.filename);
     
