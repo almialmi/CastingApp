@@ -1,4 +1,7 @@
 const Category = require('../models/catagory.models');
+const Request = require('../models/request.models');
+const ComputationPost = require('../models/computationPost.models');
+const User = require('../models/user.models');
 const multer = require('multer');
 const fs = require('fs');
 
@@ -218,15 +221,18 @@ module.exports.upadteBothCategotyProfilePicAndProfile= (req,res)=>{
  }}});
 }
 
-module.exports.deleteCategory=(req,res)=>{
+module.exports.deleteCategory= async(req,res)=>{
     //var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.params.filename); 
   
-    Category.findById(req.params.id,function(err,cat){
+    Category.findById(req.params.id, async function(err,cat){
         if(err){
             return res.status(404).send({
                 message: "Category not found"
             });
         }else{
+            const user = await User.findOne({category: cat.id});
+            Request.remove({requestedUser:user.id}).exec();
+            ComputationPost.remove({user:user.id}).exec();
             cat.remove();
             res.send({message: "Category deleted successfully!"});
         }
