@@ -17,7 +17,7 @@ router.post('/createCategory',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('cr
 router.get('/showCategory',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','category'),ctrlCategory.showCategory);
 
 //update category profile pic
-router.put('/upadteCategotyProfilePicOrBoth/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteCategotyProfilePicOrBoth);
+router.put('/upadteCategotyProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteCategotyProfilePicOrBoth);
 
 // update category profile
 router.put('/updateCatagoryProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.updateCatagoryProfile)
@@ -113,7 +113,7 @@ router.get('/showEvents/:closed',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess(
 //router.get('/imagePath/:id',ctrlEvent.imagePath);
 
 //update events profile pic
-router.put('/updateEventProfilePicOrBoth/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfilePicOrBoth);
+router.put('/updateEventProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfilePicOrBoth);
 
 // update event profile
 router.put('/updateEventProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfile);
