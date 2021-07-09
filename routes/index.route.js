@@ -17,13 +17,11 @@ router.post('/createCategory',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('cr
 router.get('/showCategory',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','category'),ctrlCategory.showCategory);
 
 //update category profile pic
-router.put('/upadteCategotyProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteCategotyProfilePic);
+router.put('/upadteCategotyProfilePicOrBoth/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteCategotyProfilePicOrBoth);
 
 // update category profile
 router.put('/updateCatagoryProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.updateCatagoryProfile)
 
-// update both profile and profiel pic
-router.put('/upadteBothCategotyProfilePicAndProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','category'),ctrlCategory.upadteBothCategotyProfilePicAndProfile); 
 
 //delete category 
 router.delete('/deleteCategory/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('deleteAny','category'),ctrlCategory.deleteCategory);
@@ -115,13 +113,11 @@ router.get('/showEvents/:closed',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess(
 //router.get('/imagePath/:id',ctrlEvent.imagePath);
 
 //update events profile pic
-router.put('/updateEventProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfilePic);
+router.put('/updateEventProfilePicOrBoth/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfilePicOrBoth);
 
 // update event profile
 router.put('/updateEventProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfile);
 
-// for to update both profile and pic
-router.put('/updateBothEventProfilePicAndProfile/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateBothEventProfilePicAndProfile);
 
 //delete events
 router.delete('/deleteEvent/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('deleteAny','event'),ctrlEvent.deleteEvent);
@@ -150,8 +146,6 @@ router.delete('/deleteComputationPost/:id',jwtHelper.verifyJwtToken,ctrlAdmin.gr
 //fill juge points
 router.put('/fillJugePoints/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','computationalPost'),ctrlComputPost.fillJugePoints);
 
-// get sum of judges points
-router.get('/sumOfJugesPoint/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','computationalPost'),ctrlComputPost.sumOfJugesPoint);
 
 //to show posts based on number of likes and juge points
 router.get('/higherToLowerLikes/:eventForComputation',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','computationalPost'),ctrlComputPost.orderByHighestLikeToTheEvent);

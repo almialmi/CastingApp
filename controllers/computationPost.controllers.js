@@ -24,6 +24,7 @@ module.exports.showComputationPosts=async(req,res)=>{
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.size);
        
+       
         const offset = page ? page * limit : 0;
     
         console.log("offset = " + offset);    
@@ -39,7 +40,8 @@ module.exports.showComputationPosts=async(req,res)=>{
                               .populate('eventForComputation')
                               .skip(offset) 
                               .limit(limit); 
-          
+        
+        
         const response = {
           "totalItems": numOfStaffs,
           "totalPages": Math.ceil(result.length / limit),
@@ -213,36 +215,30 @@ module.exports.deletePost =(req,res)=>{
 
 }
 
-module.exports.fillJugePoints = (req,res)=>{
-
+module.exports.fillJugePoints = async(req,res)=>{
+    const { id } = req.params.id
+    const com = await ComputationPost.findOne({ id });
+    let sumOfPoints = com.sumOfJugePoints + req.body.jugePoints  
+    
     ComputationPost.findByIdAndUpdate(req.params.id,{
         $push:{
             jugePoints:req.body.jugePoints 
-         }
-    },{new:true}).exec((err,result)=>{
+         },
+         sumOfJugePoints:sumOfPoints
+
+    },{new:true}).exec( async (err,result)=>{
         if(err){
             return res.status(422).json({error:err})
         }
         else{
-            res.send({
-                message:"set judges points!!"
+            return res.send({
+                 message: "set judges points!!"
+
             })
         }
     })
 }
 
-module.exports.sumOfJugesPoint = async(req,res)=>{
-    let sumOfPoints =0;
-    const { id } = req.params.id
-    const com = await ComputationPost.findOne({ id });
-    for(let i=0;i<com.jugePoints.length;i++){ 
-        sumOfPoints =sumOfPoints + com.jugePoints[i]  
-    }
-    return res.send({
-        message:sumOfPoints
-    })
-
-}
 
 module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
     let eventForComputation = req.params.eventForComputation;
