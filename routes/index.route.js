@@ -42,6 +42,9 @@ router.put('/updateAdminAndNormalUserProfile',jwtHelper.verifyJwtToken,ctrlAdmin
 //Admin and normal user login
 router.post('/adminAndNormalUserLogin',ctrlAdmin.adminAndNormalUserLogin);
 
+// log out
+router.get('/logout',jwtHelper.verifyJwtToken,ctrlAdmin.logout);
+
 // fetch NormalUser for Admin
 router.get('/fetchNormalUserForAdmin',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','profile'),ctrlAdmin.fetchNormalUserForAdmin);
 

@@ -778,3 +778,15 @@ module.exports.updateProfilePic = (req,res)=>{
 
 }
 
+module.exports.logout =(req,res,next)=>{
+    res.cookie('token','none',{
+        httpOnly: true,
+    });
+
+    res.status(200).send({
+        success:true,
+        data:{}
+    });
+
+}
+
