@@ -286,7 +286,7 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
         
                     var newImg = fs.readFileSync(req.file.path);
                     var encImg = newImg.toString('base64');
-                if(req.body.name && !req.body.description && !req.body.category && !req.body.startDate && !req.body.endDate){
+                if(!req.body.name && !req.body.description && !req.body.category && !req.body.startDate && !req.body.endDate){
                     EventForComputation.findByIdAndUpdate(req.params.id,{
                         $set:{
                             photo:{
