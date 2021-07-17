@@ -31,6 +31,8 @@ module.exports.registerEvent =(req,res,next)=>{
             //console.log(err)
             if(err.code === "LIMIT_UNEXPECTED_FILE"){
                 return res.send("Too many image to upload.");
+            }else{
+                res.send(err)
             }
         } else {
             
@@ -260,12 +262,13 @@ module.exports.updateEventProfile = async(req,res)=>{
 }
 
 module.exports.updateEventProfilePicOrBoth =(req,res)=>{
-    if(req.body.name && !req.body.description && !req.body.category && !req.body.startDate && !req.body.endDate){
         uploadStorage(req, res, (err) => {
             if(err){
                 //console.log(err)
                 if(err.code === "LIMIT_UNEXPECTED_FILE"){
                     return res.send("Too many image to upload.");
+                }else{
+                    res.send(err)
                 }
             } else {
                 if(req.file == undefined){
@@ -283,6 +286,7 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
         
                     var newImg = fs.readFileSync(req.file.path);
                     var encImg = newImg.toString('base64');
+                if(req.body.name && !req.body.description && !req.body.category && !req.body.startDate && !req.body.endDate){
                     EventForComputation.findByIdAndUpdate(req.params.id,{
                         $set:{
                             photo:{
@@ -312,32 +316,8 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                             message: "Error updating Event with id " + req.params.id
                         });
                   });
-    
-     }}});
 
-    }else{
-        uploadStorage(req, res, (err) => {
-            if(err){
-                //console.log(err)
-                if(err.code === "LIMIT_UNEXPECTED_FILE"){
-                    return res.send("Too many image to upload.");
-                }
-            } else {
-                if(req.file == undefined){
-    
-                    res.status(404).json({ success: false, msg: 'File is undefined!',file: `eventPhotoStorage/${req.file}`});
-    
-                }
-                else {
-                    function unlinkImage(){
-                        var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
-                        fs.unlink(filepath,function(err,result){
-                            console.log(err);
-                        });
-                      }
-        
-                    var newImg = fs.readFileSync(req.file.path);
-                    var encImg = newImg.toString('base64');
+                }else{
                     EventForComputation.findByIdAndUpdate(req.params.id,{
                         $set:{
                             name:req.body.name,
@@ -372,13 +352,10 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                             message: "Error updating Event with id " + req.params.id
                         });
                   });
+
+                }       
     
      }}});
-    
-
-    }
-    
-
 }
 
 

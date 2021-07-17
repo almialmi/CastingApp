@@ -30,9 +30,10 @@ const uploadStorage = multer({storage:storage,
 module.exports.registerCategory =(req,res,next)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            //console.log(err)
            if(err.code === "LIMIT_UNEXPECTED_FILE"){
                 return res.send("Too many image to upload.");
+            }else{
+                res.send(err)
             }
         } else {
             
@@ -111,13 +112,12 @@ module.exports.updateCatagoryProfile = (req,res)=>{
 }
 
 module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
-    if(!req.body.name)
-    {
         uploadStorage(req, res, (err) => {
             if(err){
-                //console.log(err)
                 if(err.code === "LIMIT_UNEXPECTED_FILE"){
                     return res.send("Too many image to upload.");
+                }else{
+                    res.send(err)
                 }
             } else {
                 if(req.file == undefined){
@@ -134,94 +134,72 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
                       }
                     var newImg = fs.readFileSync(req.file.path);
                     var encImg = newImg.toString('base64');
-                    Category.findByIdAndUpdate(req.params.id,{
-                        $set:{
-                            photo:{
-                                data:Buffer.from(encImg, 'base64'),
-                                contentType:'image/png'
+                    if(!req.body.name){
+                        Category.findByIdAndUpdate(req.params.id,{
+                            $set:{
+                                photo:{
+                                    data:Buffer.from(encImg, 'base64'),
+                                    contentType:'image/png'
+                                }
                             }
-                        }
-                    }, {new: true})
-                    .then(cat => {
-                        if(!cat) {
-                            unlinkImage()
-                            return res.status(404).send({
-                                message: " Category not found with this " + req.params.id
-                            });
-                        }
-                        res.send({
-                               message:"Category profile pic Update Successfully !!"
-                        });
-                    }).catch(err => {
-                        unlinkImage()
-                        if(err.kind === 'ObjectId') {
-                            return res.status(404).send({
-                                message: "Category not found with this " + req.params.id
-                            });                
-                        }
-                        return res.status(500).send({
-                            message: "Error updating Category with id " + req.params.id
-                        });
-                  });
-    
-     }}});
-    }else{
-        uploadStorage(req, res, (err) => {
-            if(err){
-                //console.log(err)
-                if(err.code === "LIMIT_UNEXPECTED_FILE"){
-                    return res.send("Too many image to upload.");
-                }
-            } else {
-                if(req.file == undefined){
-    
-                    res.status(404).json({ success: false, msg: 'File is undefined!',file: `categoryPhotoStorage/${req.file}`});
-    
-                } 
-                else {
-                    function unlinkImage(){
-                        var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.file.filename);
-                        fs.unlink(filepath,function(err,result){
-                            console.log(err);
-                        });
-                      }
-                    var newImg = fs.readFileSync(req.file.path);
-                    var encImg = newImg.toString('base64');
-                    Category.findByIdAndUpdate(req.params.id,{
-                        $set:{
-                            name:req.body.name,
-                            photo:{
-                                data:Buffer.from(encImg, 'base64'),
-                                contentType:'image/png'
+                        }, {new: true})
+                        .then(cat => {
+                            if(!cat) {
+                                unlinkImage()
+                                return res.status(404).send({
+                                    message: " Category not found with this " + req.params.id
+                                });
                             }
-                        }
-                    }, {new: true})
-                    .then(cat => {
-                        if(!cat) {
-                            unlinkImage()
-                            return res.status(404).send({
-                                message: " Category not found with this " + req.params.id
+                            res.send({
+                                   message:"Category profile pic Update Successfully !!"
                             });
-                        }
-                        res.send({
-                               message:"Category Update Successfully !!"
-                        });
-                    }).catch(err => {
-                        unlinkImage()
-                        if(err.kind === 'ObjectId') {
-                            return res.status(404).send({
-                                message: "Category not found with this " + req.params.id
-                            });                
-                        }
-                        return res.status(500).send({
-                            message: "Error updating Category with id " + req.params.id
-                        });
-                  });
-    
-     }}});
+                        }).catch(err => {
+                            unlinkImage()
+                            if(err.kind === 'ObjectId') {
+                                return res.status(404).send({
+                                    message: "Category not found with this " + req.params.id
+                                });                
+                            }
+                            return res.status(500).send({
+                                message: "Error updating Category with id " + req.params.id
+                            });
+                      });
 
-    }
+                    }else{
+                        Category.findByIdAndUpdate(req.params.id,{
+                            $set:{
+                                name:req.body.name,
+                                photo:{
+                                    data:Buffer.from(encImg, 'base64'),
+                                    contentType:'image/png'
+                                }
+                            }
+                        }, {new: true})
+                        .then(cat => {
+                            if(!cat) {
+                                unlinkImage()
+                                return res.status(404).send({
+                                    message: " Category not found with this " + req.params.id
+                                });
+                            }
+                            res.send({
+                                   message:"Category Update Successfully !!"
+                            });
+                        }).catch(err => {
+                            unlinkImage()
+                            if(err.kind === 'ObjectId') {
+                                return res.status(404).send({
+                                    message: "Category not found with this " + req.params.id
+                                });                
+                            }
+                            return res.status(500).send({
+                                message: "Error updating Category with id " + req.params.id
+                            });
+                      });
+
+                    }
     
+     }}});   
 }
 
 

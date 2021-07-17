@@ -299,7 +299,7 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
 
        let isMatch = await bcrypt.compare(password,admin.password);
        // console.log(isMatch)
-        if (isMatch) {
+        if (!isMatch) {
             var updates = {
                 $set: { loginAttempts: 0 },
                 $unset: { lockUntil: 1 }
