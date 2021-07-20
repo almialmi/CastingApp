@@ -257,6 +257,8 @@ module.exports.updateEventProfile = async(req,res)=>{
         
     }
     else{
+        var startDate = new Date(req.body.startDate);
+        var endDate = new Date(req.body.endDate); 
         EventForComputation.findByIdAndUpdate(req.params.id,{
             $set:{
                name : req.body.name,
