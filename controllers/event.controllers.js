@@ -257,7 +257,34 @@ module.exports.updateEventProfile = async(req,res)=>{
         
     }
     else{
-        return res.send("Choose what you want to update");
+        EventForComputation.findByIdAndUpdate(req.params.id,{
+            $set:{
+               name : req.body.name,
+               description : req.body.description,
+               category : req.body.category,
+               startDate : startDate,
+               endDate : endDate
+            }
+        }, {new: true})
+        .then(eve => {
+            if(!eve) {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"Event update successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Event not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Event profile with id " + req.params.id
+            });
+      });
     } 
 }
 

@@ -354,10 +354,38 @@ module.exports.updateUserProfile =(req,res)=>{
             });
       });
     }else{
-        return res.send("Choose what you want to update");
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                 firstName: req.body.firstName,
+                 lastName : req.body.lastName,
+                 email : req.body.email,
+                 mobile : formatedphone,
+                 category: req.body.category,
+                 video : req.body.video,
+                 gender : req.body.gender
+            }
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"User Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
 
     }
-
 }
 
 module.exports.deleteUser= (req,res)=>{
