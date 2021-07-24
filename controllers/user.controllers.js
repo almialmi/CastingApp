@@ -354,6 +354,13 @@ module.exports.updateUserProfile =(req,res)=>{
             });
       });
     }else{
+        let formatedphone = '';
+        let phone = req.body.mobile;
+        if (phone.charAt(0) == '0') {
+            formatedphone = '+251' + phone.substring(1);
+        } else if ((phone.charAt(0) == '+') && (phone.length > 12 || phone.length <= 13)) {
+            formatedphone = phone
+        }
         User.findByIdAndUpdate(req.params.id,{
             $set:{
                  firstName: req.body.firstName,

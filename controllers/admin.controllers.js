@@ -17,14 +17,14 @@ const path = require('path');
 const phoneToken = require('generate-sms-verification-code');
 
 
-const user = "almialmi61621@gmail.com";
-const pass = "Cybma12345";
+const user = process.env.ADMIN_EMAIL;
+const pass = process.env.ADMIN_PASSWORD;
 
 const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
     service: "Gmail",
     port: 465,
-    secure:false,
+    secure:true,
     auth: {
       user: user,
       pass: pass,
@@ -299,7 +299,7 @@ module.exports.adminAndNormalUserLogin = async(req , res , next) => {
 
        let isMatch = await bcrypt.compare(password,admin.password);
        // console.log(isMatch)
-        if (isMatch) {
+        if (!isMatch) {
             var updates = {
                 $set: { loginAttempts: 0 },
                 $unset: { lockUntil: 1 }

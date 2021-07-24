@@ -48,7 +48,8 @@ var userSchema = new mongoose.Schema({
     },
     gender:{
         type:String,
-        required:true
+        default:'Female',
+        enum: ["Female", "Male"]
     },
     like:[{
         type:mongoose.Schema.Types.ObjectId,
