@@ -598,7 +598,7 @@ module.exports.forgotPassword = async(req,res)=>{
         if (!admin) {
         return res.status(404).send({ message: 'Email does not exist' });
         }
-        var resettoken = new Reset({ _userId: admin._id, resettoken: crypto.randomBytes(16).toString('hex') });
+        var resettoken = new Reset({ _userId: admin._id, resettoken: phoneToken(8,{type:'number'});
 
         await resettoken.save(function (err) {
             if (err) { return res.status(500).send({ msg: err.message }); }

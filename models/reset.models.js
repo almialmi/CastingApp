@@ -8,7 +8,7 @@ _userId: {
      ref: 'Admin' 
     },
 resettoken: { 
-    type: String, 
+    type: Number, 
     required: true 
 },
 createdAt: { 
