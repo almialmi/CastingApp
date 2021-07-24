@@ -14,10 +14,11 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const phoneToken = require('generate-sms-verification-code');
 
 
-const user = process.env.User;
-const pass = process.env.Password;
+const user = "almialmi61621@gmail.com";
+const pass = "Cybma12345";
 
 const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -68,14 +69,13 @@ const uploadStorage = multer({storage:storage,
 module.exports.adminRegister = (req,res,next)=>{
     var validEmail = validator.isEmail(req.body.email);
     if(validEmail){ 
-        const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
+        const token =  phoneToken(6,{type:'number'})
         var admin = new Admin({
             userName:req.body.userName,
             email:req.body.email,
             password:req.body.password,
             role:"Admin",
             confirmationCode: token
-
         });
         
         admin.save((err)=>{
@@ -109,7 +109,7 @@ module.exports.adminRegister = (req,res,next)=>{
 module.exports.normalUserRegister = (req,res,next)=>{
     var validEmail = validator.isEmail(req.body.email);
     if(validEmail){
-        const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
+        const token = phoneToken(6,{type:'number'})
         var admin = new Admin({
             userName:req.body.userName,
             email:req.body.email,
@@ -158,7 +158,7 @@ module.exports.verifyUser = (req, res, next) => {
             res.status(500).send({ message: err });
           }
           else{
-            res.status(200).send({ message: "User Account activate"});
+            return res.status(200).send({ message: "User Account activate"});
 
           }
         });
