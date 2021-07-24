@@ -54,7 +54,6 @@ var adminSchema = new mongoose.Schema({
 });
 
 adminSchema.pre('save',function(next){
-  if (this.isModified("password") || this.isNew) {
     bcrypt.genSalt(10,(err,salt)=>{
         bcrypt.hash(this.password,salt,(err,hash)=>{
             this.password = hash;
@@ -62,7 +61,7 @@ adminSchema.pre('save',function(next){
             next();
         });
     });
-  }
+  
 });
 
 adminSchema.plugin(uniqueValidator);

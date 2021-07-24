@@ -145,8 +145,8 @@ module.exports.normalUserRegister = (req,res,next)=>{
  }
 
 //verfiy the email
-module.exports.verifyUser = (req, res, next) => {
-   Admin.findOne({
+module.exports.verifyUser = (req, res) => {
+    Admin.findOne({
       confirmationCode: req.params.confirmationCode,
     }).then((admin) => {
         if (!admin) {
@@ -158,7 +158,7 @@ module.exports.verifyUser = (req, res, next) => {
             res.status(500).send({ message: err });
           }
           else{
-            return res.status(200).send({ message: "User Account activate"});
+            res.status(200).send({ message: "User Account activate"});
 
           }
         });
