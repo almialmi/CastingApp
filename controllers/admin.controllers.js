@@ -15,10 +15,17 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const phoneToken = require('generate-sms-verification-code');
+const emailValidator = require('deep-email-validator');
+const { passwordStrength } = require('check-password-strength')
 
 
 const user = process.env.ADMIN_EMAIL;
 const pass = process.env.ADMIN_PASSWORD;
+
+
+async function isEmailValid(email) {
+    return emailValidator.validate(email)
+}
 
 const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -34,7 +41,10 @@ const transport = nodemailer.createTransport({
 const sendConfirmationEmail = (name, email, confirmationCode) => {
     console.log("Check");
     transport.sendMail({
-      from:user,
+      from:{
+          name:"ZeArada Film Production",
+          address:user
+        },
       to: email,
       subject: "Please confirm your account",
       html: `<h1>Email Confirmation</h1>
@@ -66,80 +76,98 @@ const uploadStorage = multer({storage:storage,
       callback(null, true);
 }}).single('photo');
 
-module.exports.adminRegister = (req,res,next)=>{
-    var validEmail = validator.isEmail(req.body.email);
-    if(validEmail){ 
-        const token =  phoneToken(6,{type:'number'})
-        var admin = new Admin({
-            userName:req.body.userName,
-            email:req.body.email,
-            password:req.body.password,
-            role:"Admin",
-            confirmationCode: token
-        });
-        
-        admin.save((err)=>{
-            if(!err){
-                sendConfirmationEmail(
-                    admin.userName,
-                    admin.email,
-                    admin.confirmationCode
-                );
-                res.send({
-                    message:"Admin is registered successfully! Please check your email"
-                });
+module.exports.adminRegister = async(req,res,next)=>{
+    const {valid, reason, validators} = await isEmailValid(req.body.email);
+   // if (valid) return res.send({message: "OK"});
+    //var validEmail = validator.isEmail(req.body.email);
+     passwordStrengthCheck = passwordStrength(req.body.password).value
 
-            }
-            else{
-                if(err)
-                    res.status(422).send(err.message);
-                else
-                    return next(err);    
-            }
-                
-        });
+    if(valid){ 
+        if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
+            const token =  phoneToken(6,{type:'number'})
+            var admin = new Admin({
+                userName:req.body.userName,
+                email:req.body.email,
+                password:req.body.password,
+                role:"Admin",
+                confirmationCode: token
+            });
+            
+            admin.save((err)=>{
+                if(!err){
+                    sendConfirmationEmail(
+                        admin.userName,
+                        admin.email,
+                        admin.confirmationCode
+                    );
+                    res.send({
+                        message:"Admin is registered successfully! Please check your email"
+                    });
 
+                }
+                else{
+                    if(err)
+                        res.status(422).send(err.message);
+                    else
+                        return next(err);    
+                }
+                    
+            });
+        }else{
+            res.send("please enter strong by the combination of capital letter,special character and small letter!!")
+        }
     }else{
-        return res.send("Enter valid Email...");
+        return res.status(400).send({
+            message: "Please provide a valid email address.",
+            reason: validators[reason].reason
+        })
 
     }
     
 }
 
-module.exports.normalUserRegister = (req,res,next)=>{
-    var validEmail = validator.isEmail(req.body.email);
-    if(validEmail){
-        const token = phoneToken(6,{type:'number'})
-        var admin = new Admin({
-            userName:req.body.userName,
-            email:req.body.email,
-            password:req.body.password,
-            confirmationCode: token
-            });
-        
-        admin.save((err)=>{
-            if(!err){
-                res.send({
-                    message:
-                    "User is registered successfully! Please check your email",
+module.exports.normalUserRegister = async(req,res,next)=>{
+    const {valid, reason, validators} = await isEmailValid(req.body.email);
+    passwordStrengthCheck = passwordStrength(req.body.password).value
+    //var validEmail = validator.isEmail(req.body.email);
+    if(valid){
+        if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
+            const token = phoneToken(6,{type:'number'})
+            var admin = new Admin({
+                userName:req.body.userName,
+                email:req.body.email,
+                password:req.body.password,
+                confirmationCode: token
                 });
-                sendConfirmationEmail(
-                    admin.userName,
-                    admin.email,
-                    admin.confirmationCode
-                );
-            }
-            else{
-                if(err)
-                    res.status(422).send(err.message);
-                else
-                    return next(err);    
-            }
-                
-        });
-
+            
+            admin.save((err)=>{
+                if(!err){
+                    res.send({
+                        message:
+                        "User is registered successfully! Please check your email",
+                    });
+                    sendConfirmationEmail(
+                        admin.userName,
+                        admin.email,
+                        admin.confirmationCode
+                    );
+                }
+                else{
+                    if(err)
+                        res.status(422).send(err.message);
+                    else
+                        return next(err);    
+                }
+                    
+            });
     }else{
-        return res.send("Enter valid Email...");
+        res.send("please enter strong by the combination of capital letter,special character and small letter!!")
+    }
+    }else{
+        return res.status(400).send({
+            message: "Please provide a valid email address.",
+            reason: validators[reason].reason
+        })
     }
     
  }
@@ -611,7 +639,10 @@ module.exports.forgotPassword = async(req,res)=>{
 
         var mailOptions = {
         to: admin.email,
-        from: user,
+        from:{
+            name:"ZeArada Film Production",
+            address:user
+        },
         subject: 'Zerihun Casting Agent App RestPassword',
         text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
         'Please copy the following code and past to the appication.\n\n' + 
@@ -789,4 +820,8 @@ module.exports.logout =(req,res,next)=>{
     });
 
 }
+
+
+
+
 
