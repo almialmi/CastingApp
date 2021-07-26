@@ -64,8 +64,6 @@ router.post('/registerUser',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('crea
 //fetch user 
 router.get('/fetchAllUser',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','user'),ctrlUser.fetchAllUser);
 
-// fetch image
-//router.get('/fetchImage/:id',ctrlUser.fetchImage);
 
 //fetch based on category and gender
 router.get('/fetchMaleAndFemaleUser/:category/:gender',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','user'),ctrlUser.fetchUserMaleAndFemale);
@@ -99,10 +97,6 @@ router.delete('/deleteRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAcces
 
 //approve
 router.put('/approveOrRejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','request'),ctrlAdmin.acceptOrRejectRequests);
-
-//reject
-//router.put('/rejectRequest/:id',jwtHelper.verifyJwtToken,ctrlAdmin.Authenticate,ctrlAdmin.rejectRequests);
-
 
 
 //**************************** Event Section **************************************/

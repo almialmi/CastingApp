@@ -2,12 +2,16 @@ const User = require('../models/user.models');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-
+const emailValidator = require('deep-email-validator');
 const validator =require('validator');
+const jwt = require('jsonwebtoken');
 
 
 global.__basedir = __dirname;
 
+async function isEmailValid(email) {
+    return emailValidator.validate(email)
+}
 //multer upload storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -30,7 +34,7 @@ const uploadStorage = multer({storage:storage,
 
 
 module.exports.userRegister = (req,res)=>{
-    uploadStorage(req, res, (err) => {
+    uploadStorage(req, res, async(err) => {
         if(err){
            // console.log(err)
             if(err.code === "LIMIT_UNEXPECTED_FILE"){
@@ -38,9 +42,7 @@ module.exports.userRegister = (req,res)=>{
             }
         } 
         else {
-           var validEmail = validator.isEmail(req.body.email);
-           if(validEmail){
-                let formatedphone = 0;
+               let formatedphone = 0;
                 let phone = req.body.mobile;
                 if (phone.charAt(0) == '0') {
                     formatedphone = '+251' + phone.substring(1);
@@ -94,7 +96,6 @@ module.exports.userRegister = (req,res)=>{
                 user.photo4.data = Buffer.from(encImg4, 'base64');
                 user.photo4.contentType='image/png';
 
-                
                 user.save((err,doc)=>{
                         if(!err)
                         res.status(201).send({
@@ -109,9 +110,6 @@ module.exports.userRegister = (req,res)=>{
 
                             }}});
                         }
-            }else{
-                return res.send("Enter valid Email");
-            }
        }
 });
 }
@@ -130,7 +128,7 @@ module.exports.fetchAllUser = async(req,res)=>{
         
         numOfStaffs = await User.countDocuments({});
         result = await User.find({__v:0}) 
-                              .populate('category')
+                              .populate('category',{name:1})
                               .skip(offset) 
                               .limit(limit); 
           
@@ -154,7 +152,7 @@ module.exports.fetchAllUser = async(req,res)=>{
 
 //update but some issue 
 
-module.exports.updateUserProfile =(req,res)=>{
+module.exports.updateUserProfile = async(req,res)=>{
     if (!req.body.lastName && !req.body.email && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
         User.findByIdAndUpdate(req.params.id,{
             $set:{
@@ -209,8 +207,8 @@ module.exports.updateUserProfile =(req,res)=>{
       });
     }
     else if(!req.body.firstName && !req.body.lastName && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
-        var validEmail = validator.isEmail(req.body.email);
-        if(validEmail){   
+        const {valid, reason, validators} = await isEmailValid(req.body.email);
+        if(valid){   
             User.findByIdAndUpdate(id,{
                 $set:{
                     email:req.body.email
@@ -237,7 +235,10 @@ module.exports.updateUserProfile =(req,res)=>{
           });
     
         }else{
-            return res.send("Enter valid Email...");
+            return res.status(400).send({
+                message: "Please provide a valid email address.",
+                reason: validators[reason].reason
+            })
         }
     }
     else if(!req.body.firstName && !req.body.lastName && !req.body.email && !req.body.video && !req.body.category && !req.body.gender){
@@ -413,17 +414,23 @@ module.exports.deleteUser= (req,res)=>{
 }
 
 module.exports.updateLike =(req,res)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        id = decoded.admin_id;
+    });
    User.findOne({_id:req.params.id},(err,user)=>{
        if(err){
            res.send({error:err})
        }else{
-           if(user.disLike.indexOf(req.body.like !== -1)){
+           if(user.disLike.indexOf(id) !== -1){
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        disLike:req.body.like
+                        disLike:id
                     },
                     $push:{
-                        like:req.body.like
+                        like:id
                     }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -437,11 +444,11 @@ module.exports.updateLike =(req,res)=>{
                 })
                
            }
-            else if(user.like.indexOf(req.body.like) !== -1){
+            else if(user.like.indexOf(id) !== -1){
                 console.log('exist')
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        like:req.body.like
+                        like:id
                     }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -457,7 +464,7 @@ module.exports.updateLike =(req,res)=>{
             }else{
                 User.findByIdAndUpdate(req.params.id,{
                     $push:{
-                        like:req.body.like
+                        like:id
                     }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -475,17 +482,23 @@ module.exports.updateLike =(req,res)=>{
 }
 
 module.exports.updateDisLike =(req,res)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        id = decoded.admin_id;
+    });
     User.findOne({_id:req.params.id},(err,user)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(user.like.indexOf(req.body.disLike !== -1)){
+            if(user.like.indexOf(id) !== -1){
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        like:req.body.disLike
+                        like:id
                     },
                     $push:{
-                        disLike:req.body.disLike
+                        disLike:id
                      }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -499,11 +512,11 @@ module.exports.updateDisLike =(req,res)=>{
                 })
                
            }
-            else if(user.disLike.indexOf(req.body.disLike) !== -1){
+            else if(user.disLike.indexOf(id)!== -1){
                  console.log('exist')
                  User.findByIdAndUpdate(req.params.id,{
                      $pull:{
-                        disLike:req.body.disLike
+                        disLike:id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -519,7 +532,7 @@ module.exports.updateDisLike =(req,res)=>{
              }else{
                  User.findByIdAndUpdate(req.params.id,{
                      $push:{
-                        disLike:req.body.disLike
+                        disLike:id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -558,7 +571,7 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
        
        numOfStaffs = await User.countDocuments({});
        result = await User.find({category:category,gender:gender},{__v:0}) 
-                             .populate('category')
+                             .populate('category',{name:1})
                              .skip(offset) 
                              .limit(limit); 
          

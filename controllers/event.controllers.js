@@ -67,7 +67,9 @@ module.exports.registerEvent =(req,res,next)=>{
 
                eventForCOmputation.save((err,doc)=>{
                     if(!err)
-                      res.status(201).send(doc);
+                      res.status(201).send({
+                          message:"Event created successfully!!"
+                      });
                     else{
                         unlinkImage()
                         if(err)
@@ -100,7 +102,7 @@ module.exports.showEvents= async(req,res)=>{
         
         numOfStaffs = await EventForComputation.countDocuments({});
         result = await EventForComputation.find({closed:closed},{__v:0}) 
-                              .populate('category')
+                              .populate('category',{name:1})
                               .skip(offset) 
                               .limit(limit); 
         
@@ -203,9 +205,10 @@ module.exports.updateEventProfile = async(req,res)=>{
       });
     }
     else if(!req.body.name && !req.body.category && !req.body.description && !req.body.endDate){
+        var startDate = new Date(req.body.startDate);
         EventForComputation.findByIdAndUpdate(req.params.id,{
             $set:{
-                startDate:req.body.startDate
+                startDate:startDate
             }
         }, {new: true})
         .then(eve => {
@@ -229,10 +232,11 @@ module.exports.updateEventProfile = async(req,res)=>{
       });
         
     }
-    else if(!req.body.name && !req.body.category && !req.body.description && !req.body.endDate){
+    else if(!req.body.name && !req.body.category && !req.body.description && !req.body.startDate){
+        var endDate = new Date(req.body.endDate); 
         EventForComputation.findByIdAndUpdate(req.params.id,{
             $set:{
-                endDate:req.body.endDate
+                endDate:endDate 
             }
         }, {new: true})
         .then(eve => {
@@ -347,6 +351,8 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                   });
 
                 }else{
+                    var startDate = new Date(req.body.startDate);
+                    var endDate = new Date(req.body.endDate); 
                     EventForComputation.findByIdAndUpdate(req.params.id,{
                         $set:{
                             name:req.body.name,
@@ -356,8 +362,8 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                                 data:Buffer.from(encImg, 'base64'),
                                 contentType:'image/png'
                             },
-                            startDate:req.body.startDate,
-                            endDate:req.body.endDate
+                            startDate:startDate,
+                            endDate:endDate
                         }
                     }, {new: true})
                     .then(eve => {

@@ -232,37 +232,43 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
       });
     }
     else if(!req.body.email && !req.body.userName){
-        const salt = await bcrypt.genSaltSync(10);
-        const password = await req.body.password;
-        Admin.findByIdAndUpdate(id,{
-            $set:{
-                password:bcrypt.hashSync(password, salt)
-            }
-        }, {new: true})
-        .then(admin => {
-            if(!admin) {
-                return res.status(404).send({
-                    message: "Admin or NormalUser not found with this " + id
+        passwordStrengthCheck = passwordStrength(req.body.password).value
+        if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
+            const salt = await bcrypt.genSaltSync(10);
+            const password = await req.body.password;
+            Admin.findByIdAndUpdate(id,{
+                $set:{
+                    password:bcrypt.hashSync(password, salt)
+                }
+            }, {new: true})
+            .then(admin => {
+                if(!admin) {
+                    return res.status(404).send({
+                        message: "Admin or NormalUser not found with this " + id
+                    });
+                }
+                res.send({
+                    message:"Password Update Successfully !!"
                 });
-            }
-            res.send({
-                   message:"Password Update Successfully !!"
-            });
-        }).catch(err => {
-            if(err.kind === 'ObjectId') {
-                return res.status(404).send({
-                    message: "Admin or NormalUser not found with this " + id
-                });                
-            }
-            return res.status(500).send({
-                message: "Error updating Admin or NormalUser profile with id " + id
-            });
-      });
-        
+            }).catch(err => {
+                if(err.kind === 'ObjectId') {
+                    return res.status(404).send({
+                        message: "Admin or NormalUser not found with this " + id
+                    });                
+                }
+                return res.status(500).send({
+                    message: "Error updating Admin or NormalUser profile with id " + id
+                });
+        });
+
+        }else{
+            res.send("please enter strong by the combination of capital letter,special character and small letter!!")
+        }        
     }
     else if(!req.body.password && !req.body.userName){
-        var validEmail = validator.isEmail(req.body.email);
-        if(validEmail){   
+        const {valid, reason, validators} = await isEmailValid(req.body.email);
+       // var validEmail = validator.isEmail(req.body.email);
+        if(valid){   
             Admin.findByIdAndUpdate(id,{
                 $set:{
                     email:req.body.email
@@ -289,10 +295,13 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
           });
     
         }else{
-            return res.send("Enter valid Email...");
+            return res.status(400).send({
+                message: "Please provide a valid email address.",
+                reason: validators[reason].reason
+            })
         }
     }else{
-        return res.send("Choose what you want to update");
+        return res.send("Choose what you want to update...");   
     } 
 }
 
@@ -450,17 +459,25 @@ module.exports.Authenticate = passport.authenticate('cookie',{session:false});
 
 // create request a user for work
 module.exports.createRequest=(req,res,next)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+        jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+            id = decoded.admin_id;
+    });
     var dateForWork = new Date(req.body.dateForWork);
     var request = new Request({
         description:req.body.description,
-        applyer:req.body.applyer,
+        applyer:id,
         requestedUser:req.body.requestedUser,
         duration:req.body.duration,
         dateForWork:dateForWork
     });
     request.save((err,cat)=>{
         if(!err)
-            res.status(201).send(cat);
+            res.status(201).send({
+                message:"Request send successfully!!"
+            });
         else{
             if(err)
                 res.status(422).send(err);
@@ -493,8 +510,8 @@ module.exports.showOwnRequests= async(req,res)=>{
         });
         numOfStaffs = await Request.countDocuments({});
         result = await Request.find({applyer:applyer},{__v:0}) 
-                              .populate('applyer')
-                              .populate('requestedUser')
+                              .populate('applyer',{email:1,userName:1})
+                              .populate('requestedUser',{mobile:1,firstName:1,lastName:1})
                               .skip(offset) 
                               .limit(limit); 
           
@@ -533,8 +550,8 @@ module.exports.showRequests= async(req,res)=>{
         
         numOfStaffs = await Request.countDocuments({});
         result = await Request.find({__v:0}) 
-                              .populate('applyer')
-                              .populate('requestedUser')
+                              .populate('applyer',{email:1,userName:1})
+                              .populate('requestedUser',{mobile:1,firstName:1,lastName:1})
                               .skip(offset) 
                               .limit(limit); 
           
@@ -559,9 +576,9 @@ module.exports.showRequests= async(req,res)=>{
 
 module.exports.acceptOrRejectRequests = async(req,res)=>{
 
-    if(!req.body.description && !req.body.applyer && !req.body.requestedUser) {
+    if(req.body.approve == null) {
         return res.status(400).send({
-            message: " All this contents cann't be empty"
+            message: "You should choose!!!"
         });
     }
     await Request.findByIdAndUpdate(req.params.id, {
@@ -634,7 +651,7 @@ module.exports.forgotPassword = async(req,res)=>{
          });
         await Reset.findOne({ _userId: admin._id,resettoken: { $ne: resettoken.resettoken }}).deleteOne().catch();
         res.status(200).send({
-             message: 'Reset password link send.Check your email.' 
+             message: 'Reset password code send.Check your email.' 
         });
 
         var mailOptions = {
@@ -643,9 +660,9 @@ module.exports.forgotPassword = async(req,res)=>{
             name:"ZeArada Film Production",
             address:user
         },
-        subject: 'Zerihun Casting Agent App RestPassword',
+        subject: 'ZeArada Film Production App RestPassword',
         text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
-        'Please copy the following code and past to the appication.\n\n' + 
+        'Please enter the following code to the appication.\n\n' + 
          resettoken.resettoken + '\n\n' +
         'If you did not request this, please ignore this email and your password will remain unchanged.\n'
         }
@@ -674,7 +691,7 @@ module.exports.validateToken = async(req,res)=>{
         });
         if (!admin) {
         return res.status(409) .send({ 
-            message: 'Invalid URL' 
+            message: 'Invalid code' 
         });
         }
         Admin.findOneAndUpdate({id: admin._userId }).then(() => {
@@ -700,20 +717,26 @@ module.exports.newPassword= async(req,res)=>{
                 message: 'User does not exist'
              });
           }
-          userEmail.password = req.body.newPassword;
-          userEmail.save(function (err) {
-              if (err) {
-                return res.status(400) .send({ 
-                    message: 'Password can not reset.' 
-                });
-              } else {
-                userToken.remove();
-                return res.status(201).send({ 
-                    message: 'Password reset successfully' 
-                });
-              }
-  
-            });
+          passwordStrengthCheck = passwordStrength(req.body.password).value
+          if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
+            userEmail.password = req.body.newPassword;
+            userEmail.save(function (err) {
+                if (err) {
+                  return res.status(400) .send({ 
+                      message: 'Password can not reset.' 
+                  });
+                } else {
+                  userToken.remove();
+                  return res.status(201).send({ 
+                      message: 'Password reset successfully' 
+                  });
+                }
+    
+              });
+
+          }else{
+            res.send("please enter strong by the combination of capital letter,special character and small letter!!")
+          }
        
         });
   

@@ -60,7 +60,7 @@ module.exports.registerCategory =(req,res,next)=>{
                 category.save((err,doc)=>{
                     if(!err)
                       res.status(201).send({
-                          message:"create successfully!!"
+                          message:"Category create successfully!!"
                       });
                     else{
                         unlinkImage()
@@ -213,10 +213,16 @@ module.exports.deleteCategory= async(req,res)=>{
             });
         }else{
             const user = await User.findOne({category: cat.id});
-            Request.remove({requestedUser:user.id}).exec();
-            ComputationPost.remove({user:user.id}).exec();
-            cat.remove();
-            res.send({message: "Category deleted successfully!"});
+            if(user != null){
+                Request.remove({requestedUser:user.id}).exec();
+                ComputationPost.remove({user:user.id}).exec();
+                cat.remove();
+                res.send({message: "Category deleted successfully!"});
+            }else{
+                cat.remove();
+                res.send({message: "Category deleted successfully!"});
+
+            }   
         }
     })
     //fs.unlinkSync(filepath);

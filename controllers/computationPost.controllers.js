@@ -1,4 +1,5 @@
 const ComputationPost = require('../models/computationPost.models');
+const jwt = require('jsonwebtoken');
 
 module.exports.addComputationPost =(req,res,next)=>{
     var post = new ComputationPost({
@@ -8,7 +9,9 @@ module.exports.addComputationPost =(req,res,next)=>{
     });
     post.save((err,cat)=>{
         if(!err)
-            res.status(201).send(cat);
+            res.status(201).send({
+                message:"Computational post created successfully!!"
+            });
         else{
             if(err)
                 res.status(422).send(err);
@@ -36,8 +39,8 @@ module.exports.showComputationPosts=async(req,res)=>{
         
         numOfStaffs = await ComputationPost.countDocuments({});
         result = await ComputationPost.find({eventForComputation:eventForComputation},{__v:0}) 
-                              .populate('user')
-                              .populate('eventForComputation')
+                              .populate('user',{firstName:1,lastName:1,mobile:1})
+                              .populate('eventForComputation',{name:1,description:1})
                               .skip(offset) 
                               .limit(limit); 
         
@@ -62,17 +65,23 @@ module.exports.showComputationPosts=async(req,res)=>{
 
 
 module.exports.updateNumberOfLikes = async(req,res)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        id = decoded.admin_id;
+    });
     ComputationPost.findOne({_id:req.params.id},(err,comp)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(comp.disLike.indexOf(req.body.like) !== -1){
+            if(comp.disLike.indexOf(id) !== -1){
                 ComputationPost.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        disLike:req.body.like
+                        disLike:id
                     },
                     $push:{
-                        like:req.body.like
+                        like:id
                      }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -86,11 +95,11 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
                 })
 
             }
-            else if(comp.like.indexOf(req.body.like) !== -1){
+            else if(comp.like.indexOf(id) !== -1){
                  console.log('exist')
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $pull:{
-                         like:req.body.like
+                         like:id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -106,7 +115,7 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
              }else{
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $push:{
-                         like:req.body.like
+                         like:id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -129,17 +138,23 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
 }
 //update number of dis like
 module.exports.updateNumberOfDisLikes = async(req,res)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+        id = decoded.admin_id;
+    });
     ComputationPost.findOne({_id:req.params.id},(err,comp)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(comp.like.indexOf(req.body.disLike) !== -1){
+            if(comp.like.indexOf(id) !== -1){
                 ComputationPost.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        like:req.body.disLike
+                        like:id
                     },
                     $push:{
-                        disLike:req.body.disLike
+                        disLike:id
                      }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -153,11 +168,11 @@ module.exports.updateNumberOfDisLikes = async(req,res)=>{
                 })
 
             }
-            else if(comp.disLike.indexOf(req.body.disLike) !== -1){
+            else if(comp.disLike.indexOf(id) !== -1){
                  console.log('exist')
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $pull:{
-                        disLike:req.body.disLike
+                        disLike:id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -173,7 +188,7 @@ module.exports.updateNumberOfDisLikes = async(req,res)=>{
              }else{
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $push:{
-                        disLike:req.body.disLike
+                        disLike:id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -245,8 +260,8 @@ module.exports.orderByHighestLikeToTheEvent=(req,res)=>{
     const sort = { sumOfJugesPoint:-1,like:-1};
     ComputationPost.find({eventForComputation:eventForComputation},{__v:0})
                    .sort(sort)
-                   .populate('user')
-                   .populate('eventForComputation')
+                   .populate('user',{firstName:1,lastName:1,mobile:1})
+                   .populate('eventForComputation',{name:1,description:1})
                    .exec((err,result)=>{
                         if(err){
                              res.send(err)
@@ -264,15 +279,15 @@ module.exports.notifyBestThreeWinners =(req,res)=>{
     const limit = 3;
     ComputationPost.find({eventForComputation:eventForComputation},{__v:0})
                    .sort(sort)
-                   .populate('user')
-                   .populate('eventForComputation')
+                   .populate('user',{firstName:1,lastName:1,mobile:1})
+                   .populate('eventForComputation',{name:1,description:1})
                    .limit(limit)
                    .exec((err,result)=>{
                         if(err){
                              res.send(err)
                         }else{
                              res.status(200).send({
-                                COmputationPosts:result
+                                ComputationPosts:result
                              })
                     }
  });   
