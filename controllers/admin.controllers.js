@@ -180,16 +180,31 @@ module.exports.verifyUser = (req, res) => {
         if (!admin) {
           return res.status(404).send({ message: "User Not found." });
         }
-        admin.status = "Active";
-        admin.save((err) => {
-          if (err) {
-            res.status(500).send({ message: err });
-          }
-          else{
-            res.status(200).send({ message: "User Account activate"});
-
-          }
-        });
+        id = admin.id
+        Admin.findByIdAndUpdate(id,{
+            $set:{
+                status : "Active"
+            }
+        }, {new: true})
+        .then(admin => {
+            if(!admin) {
+                return res.status(404).send({
+                    message: "Admin or NormalUser not found with this " + id
+                });
+            }
+            res.send({
+                   message:"Account Activate Successfully!!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "Admin or NormalUser not found with this " + id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating Admin or NormalUser profile with id " + id
+            });
+      });
       })
       .catch((e) => console.log("error", e));
   };
