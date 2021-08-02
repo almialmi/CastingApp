@@ -193,7 +193,7 @@ module.exports.verifyUser = (req, res) => {
                 });
             }
             res.send({
-                   message:"Account Activate Successfully!!"
+                   message:"User Account activate"
             });
         }).catch(err => {
             if(err.kind === 'ObjectId') {
