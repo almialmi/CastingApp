@@ -526,7 +526,7 @@ module.exports.showOwnRequests= async(req,res)=>{
         numOfStaffs = await Request.countDocuments({});
         result = await Request.find({applyer:applyer},{__v:0}) 
                               .populate('applyer',{email:1,userName:1})
-                              .populate('requestedUser',{mobile:1,firstName:1,lastName:1})
+                              .populate('requestedUser',{mobile:1,firstName:1,lastName:1,photo1:1})
                               .skip(offset) 
                               .limit(limit); 
           
@@ -566,7 +566,7 @@ module.exports.showRequests= async(req,res)=>{
         numOfStaffs = await Request.countDocuments({});
         result = await Request.find({__v:0}) 
                               .populate('applyer',{email:1,userName:1})
-                              .populate('requestedUser',{mobile:1,firstName:1,lastName:1})
+                              .populate('requestedUser',{mobile:1,firstName:1,lastName:1,photo1:1})
                               .skip(offset) 
                               .limit(limit); 
           
