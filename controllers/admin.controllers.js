@@ -859,6 +859,29 @@ module.exports.logout =(req,res,next)=>{
 
 }
 
+module.exports.fetchProfileImage =(req,res)=>{
+    var id;
+    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
+        //console.log(token);
+        jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
+            id = decoded.admin_id;
+    });
+    Admin.findById(id)
+    .then(user => {
+        res.setHeader('content-type',user.profilePic.contentType);
+        res.send(user.profilePic.data);
+    }).catch(err => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return res.status(404).send({
+                message: "User found with id " + req.params.id
+            });                
+        }
+        return res.status(500).send({
+            message: "Could not get user profile with id " + req.params.id
+        });
+    });
+
+}
 
 
 

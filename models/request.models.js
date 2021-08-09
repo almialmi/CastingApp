@@ -16,10 +16,10 @@ var requestSchema = new mongoose.Schema({
     approve:{
         type:String,
         default:"Pending",
-        enum: ["Accept", "Reject","Pending"]
+        enum: ["Accepted", "Rejected","Pending"]
     },
     duration:{
-        type:Number,
+        type:String,
         required:true
     },
     dateForWork:{

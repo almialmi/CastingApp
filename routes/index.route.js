@@ -33,6 +33,9 @@ router.post('/registerAdmin',ctrlAdmin.adminRegister);
 // normal user register
 router.post('/registerNormalUser',ctrlAdmin.normalUserRegister);
 
+// fetch image
+router.get('/fetchProfileImage',ctrlAdmin.fetchProfileImage);
+
 // verfiy the email
 router.get("/verfiyEmail/:confirmationCode",ctrlAdmin.verifyUser);
 
@@ -107,7 +110,7 @@ router.post('/registerEvent',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('cre
 router.get('/showEvents/:closed',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','event'),ctrlEvent.showEvents);
 
 // fetch image
-//router.get('/imagePath/:id',ctrlEvent.imagePath);
+//router.get('/imagePath/:id',ctrlEvent.fetchImageEvent);
 
 //update events profile pic
 router.put('/updateEventProfilePic/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','event'),ctrlEvent.updateEventProfilePicOrBoth);
