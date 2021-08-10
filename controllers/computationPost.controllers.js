@@ -65,23 +65,18 @@ module.exports.showComputationPosts=async(req,res)=>{
 
 
 module.exports.updateNumberOfLikes = async(req,res)=>{
-    var id;
-    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
-        //console.log(token);
-    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
-        id = decoded.admin_id;
-    });
+    
     ComputationPost.findOne({_id:req.params.id},(err,comp)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(comp.disLike.indexOf(id) !== -1){
+            if(comp.disLike.indexOf(req.body.id) !== -1){
                 ComputationPost.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        disLike:id
+                        disLike:req.body.id
                     },
                     $push:{
-                        like:id
+                        like:req.body.id
                      }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -95,11 +90,11 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
                 })
 
             }
-            else if(comp.like.indexOf(id) !== -1){
+            else if(comp.like.indexOf(req.body.id) !== -1){
                  console.log('exist')
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $pull:{
-                         like:id
+                         like:req.body.id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -115,7 +110,7 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
              }else{
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $push:{
-                         like:id
+                         like:req.body.id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -138,23 +133,17 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
 }
 //update number of dis like
 module.exports.updateNumberOfDisLikes = async(req,res)=>{
-    var id;
-    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
-        //console.log(token);
-    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
-        id = decoded.admin_id;
-    });
     ComputationPost.findOne({_id:req.params.id},(err,comp)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(comp.like.indexOf(id) !== -1){
+            if(comp.like.indexOf(req.body.id) !== -1){
                 ComputationPost.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        like:id
+                        like:req.body.id
                     },
                     $push:{
-                        disLike:id
+                        disLike:req.body.id
                      }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -168,11 +157,11 @@ module.exports.updateNumberOfDisLikes = async(req,res)=>{
                 })
 
             }
-            else if(comp.disLike.indexOf(id) !== -1){
+            else if(comp.disLike.indexOf(req.body.id) !== -1){
                  console.log('exist')
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $pull:{
-                        disLike:id
+                        disLike:req.body.id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -188,7 +177,7 @@ module.exports.updateNumberOfDisLikes = async(req,res)=>{
              }else{
                  ComputationPost.findByIdAndUpdate(req.params.id,{
                      $push:{
-                        disLike:id
+                        disLike:req.body.id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){

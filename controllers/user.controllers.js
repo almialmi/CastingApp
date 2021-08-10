@@ -414,23 +414,17 @@ module.exports.deleteUser= (req,res)=>{
 }
 
 module.exports.updateLike =(req,res)=>{
-    var id;
-    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
-        //console.log(token);
-    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
-        id = decoded.admin_id;
-    });
    User.findOne({_id:req.params.id},(err,user)=>{
        if(err){
            res.send({error:err})
        }else{
-           if(user.disLike.indexOf(id) !== -1){
+           if(user.disLike.indexOf(req.body.id) !== -1){
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        disLike:id
+                        disLike:req.body.id
                     },
                     $push:{
-                        like:id
+                        like:req.body.id
                     }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -444,11 +438,11 @@ module.exports.updateLike =(req,res)=>{
                 })
                
            }
-            else if(user.like.indexOf(id) !== -1){
+            else if(user.like.indexOf(req.body.id) !== -1){
                 console.log('exist')
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        like:id
+                        like:req.body.id
                     }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -464,7 +458,7 @@ module.exports.updateLike =(req,res)=>{
             }else{
                 User.findByIdAndUpdate(req.params.id,{
                     $push:{
-                        like:id
+                        like:req.body.id
                     }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -482,23 +476,18 @@ module.exports.updateLike =(req,res)=>{
 }
 
 module.exports.updateDisLike =(req,res)=>{
-    var id;
-    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
-        //console.log(token);
-    jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
-        id = decoded.admin_id;
-    });
+    
     User.findOne({_id:req.params.id},(err,user)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(user.like.indexOf(id) !== -1){
+            if(user.like.indexOf(req.body.id) !== -1){
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
-                        like:id
+                        like:req.body.id
                     },
                     $push:{
-                        disLike:id
+                        disLike:req.body.id
                      }
                 },{new:true}).exec((err,result)=>{
                     if(err){
@@ -512,11 +501,11 @@ module.exports.updateDisLike =(req,res)=>{
                 })
                
            }
-            else if(user.disLike.indexOf(id)!== -1){
+            else if(user.disLike.indexOf(req.body.id)!== -1){
                  console.log('exist')
                  User.findByIdAndUpdate(req.params.id,{
                      $pull:{
-                        disLike:id
+                        disLike:req.body.id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
@@ -532,7 +521,7 @@ module.exports.updateDisLike =(req,res)=>{
              }else{
                  User.findByIdAndUpdate(req.params.id,{
                      $push:{
-                        disLike:id
+                        disLike:req.body.id
                      }
                  },{new:true}).exec((err,result)=>{
                      if(err){
