@@ -720,7 +720,7 @@ module.exports.newPassword= async(req,res)=>{
                 message: 'User does not exist'
              });
           }
-          passwordStrengthCheck = passwordStrength(req.body.password).value
+          passwordStrengthCheck = passwordStrength(req.body.newPassword).value
           if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
             userEmail.password = req.body.newPassword;
             userEmail.save(function (err) {
