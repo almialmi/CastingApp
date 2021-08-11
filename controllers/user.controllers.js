@@ -583,24 +583,7 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
 
 }
 
-module.exports.fetchImage =(req,res)=>{
 
-    User.findById(req.params.id)
-    .then(user => {
-        res.setHeader('content-type',user.photo4.contentType);
-        res.send(user.photo4.data);
-    }).catch(err => {
-        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-            return res.status(404).send({
-                message: "User found with id " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Could not delete User with id " + req.params.id
-        });
-    });
-
-}
 
 
 

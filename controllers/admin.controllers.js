@@ -668,32 +668,20 @@ module.exports.forgotPassword = async(req,res)=>{
         res.status(200).send({
              message: 'Reset password code send.Check your email.' 
         });
+        transport.sendMail({
+            to: admin.email,
+            from:{
+                name:"ZeArada Film Production",
+                address:user
+            },
+            subject: 'ZeArada Film Production App RestPassword',
+            text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+            'Please enter the following code to the appication.\n\n' + 
+            resettoken.resettoken + '\n\n' +
+            'If you did not request this, please ignore this email and your password will remain unchanged.\n'
 
-        var mailOptions = {
-        to: admin.email,
-        from:{
-            name:"ZeArada Film Production",
-            address:user
-        },
-        subject: 'ZeArada Film Production App RestPassword',
-        text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
-        'Please enter the following code to the appication.\n\n' + 
-         resettoken.resettoken + '\n\n' +
-        'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-        }
-        transport.sendMail(mailOptions, (err, response) => { 
-            if(err){
-                res.status(422).send({
-                    message:err
-                })
-            }else{
-                res.status(200).send({
-                    message:"Message sent: " + response.msg
-                })
-            }
-       })
-
-
+        }).catch(err => console.log(err));
+      
 }
 
 // validate the token

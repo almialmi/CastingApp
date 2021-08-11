@@ -34,7 +34,7 @@ router.post('/registerAdmin',ctrlAdmin.adminRegister);
 router.post('/registerNormalUser',ctrlAdmin.normalUserRegister);
 
 // fetch image
-router.get('/fetchProfileImage',ctrlAdmin.fetchProfileImage);
+router.get('/fetchProfileImage',jwtHelper.verifyJwtToken,ctrlAdmin.fetchProfileImage);
 
 // verfiy the email
 router.get("/verfiyEmail/:confirmationCode",ctrlAdmin.verifyUser);
@@ -164,7 +164,5 @@ router.post('/validateToken',ctrlAdmin.validateToken);
 // new password
 router.post('/newPassword',ctrlAdmin.newPassword);
 
-router.get('/fetchImage/:id',ctrlUser.fetchImage);
-router.get('/fetchImagevent/:id',ctrlEvent.fetchImageEvent);
 
 module.exports = router;
