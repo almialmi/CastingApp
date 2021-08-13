@@ -60,7 +60,7 @@ global.__basedir = __dirname;
   //multer upload storage
 const storage = multer.diskStorage({
       destination: (req, file, cb) => {
-          cb(null, __basedir + '/adminProfilePicStorage/')
+          cb(null,'./adminProfilePicStorage/')
       },
       filename: (req, file, cb) => {
           cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
@@ -69,6 +69,9 @@ const storage = multer.diskStorage({
   });
   
 const uploadStorage = multer({storage:storage,
+       limits:{
+            fileSize:1024 * 1024 * 5
+       },
       fileFilter : function(req, file, callback) { //file filter
       if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
           return callback(new Error('Wrong extension type'));
@@ -417,7 +420,8 @@ module.exports.fetchNormalUserForAdmin = async(req,res)=>{
         numOfStaffs = await Admin.countDocuments({});
         result = await Admin.find({role:role},{password: 0,salSecrete:0,__v:0}) 
                               .skip(offset) 
-                              .limit(limit); 
+                              .limit(limit)
+                              .sort({$natural:-1}); 
           
         const response = {
           "totalItems": numOfStaffs,
@@ -528,7 +532,8 @@ module.exports.showOwnRequests= async(req,res)=>{
                               .populate('applyer',{email:1,userName:1,profilePic:1})
                               .populate('requestedUser',{mobile:1,firstName:1,lastName:1,photo1:1})
                               .skip(offset) 
-                              .limit(limit); 
+                              .limit(limit)
+                              .sort({$natural:-1}); 
           
         const response = {
           "totalItems": numOfStaffs,
@@ -564,11 +569,12 @@ module.exports.showRequests= async(req,res)=>{
 
         
         numOfStaffs = await Request.countDocuments({});
-        result = await Request.find({__v:0}) 
+        result = await Request.find({},{__v:0}) 
                               .populate('applyer',{email:1,userName:1,profilePic:1})
                               .populate('requestedUser',{mobile:1,firstName:1,lastName:1,photo1:1})
                               .skip(offset) 
-                              .limit(limit); 
+                              .limit(limit)
+                              .sort({$natural:-1}); 
           
         const response = {
           "totalItems": numOfStaffs,
@@ -793,25 +799,16 @@ module.exports.updateProfilePic = (req,res)=>{
 
             }    
             else {
-                function unlinkImage(){
-                    var filepath= path.resolve(__basedir ,'./adminProfilePicStorage/' + req.file.filename);
-                    fs.unlink(filepath,function(err,result){
-                        console.log(err);
-                    });
-                  }
-                var newImg = fs.readFileSync(req.file.path);
-                var encImg = newImg.toString('base64');
+                var filepath= path.resolve('./adminProfilePicStorage/' + req.file.filename);
+               
                 Admin.findByIdAndUpdate(id,{
                     $set:{
-                        profilePic:{
-                            data:Buffer.from(encImg, 'base64'),
-                            contentType:'image/png'
-                        }
+                        profilePic:req.file.path
                     }
                 }, {new: true})
                 .then(admin => {
                     if(!admin) {
-                        unlinkImage()
+                        fs.unlink(filepath)
                         return res.status(404).send({
                             message: " User not found with this " + id
                         });
@@ -820,7 +817,7 @@ module.exports.updateProfilePic = (req,res)=>{
                            message:"Profile Pic Update Successfully !!"
                     });
                 }).catch(err => {
-                    unlinkImage()
+                    fs.unlink(filepath)
                     if(err.kind === 'ObjectId') {
                         return res.status(404).send({
                             message: "User not found with this " + id
@@ -847,29 +844,7 @@ module.exports.logout =(req,res,next)=>{
 
 }
 
-module.exports.fetchProfileImage =(req,res)=>{
-    var id;
-    var token= req.body.token || req.query.token || req.cookies['token'] || req.headers['token'];
-        //console.log(token);
-        jwt.verify(token , process.env.JWT_SECRET , (err , decoded) => {
-            id = decoded.admin_id;
-    });
-    Admin.findById(id)
-    .then(user => {
-        res.setHeader('content-type',user.profilePic.contentType);
-        res.send(user.profilePic.data);
-    }).catch(err => {
-        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-            return res.status(404).send({
-                message: "User found with id " + req.params.id
-            });                
-        }
-        return res.status(500).send({
-            message: "Could not get user profile with id " + req.params.id
-        });
-    });
 
-}
 
 
 

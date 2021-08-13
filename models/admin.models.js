@@ -38,8 +38,7 @@ var adminSchema = new mongoose.Schema({
         enum: ["NormalUser", "Admin"]
     },
     profilePic:{
-        data:Buffer,
-        contentType:String
+        type:String
     },
     loginAttempts:{
         type:Number,

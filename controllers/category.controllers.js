@@ -19,6 +19,9 @@ const storage = multer.diskStorage({
 });
 
 const uploadStorage = multer({storage:storage,
+    limits:{
+        fileSize:1024*1024*5
+    },
     fileFilter : function(req, file, callback) { //file filter
     if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
         return callback(new Error('Wrong extension type'));
@@ -76,13 +79,16 @@ module.exports.registerCategory =(req,res,next)=>{
 }
 
 module.exports.showCategory =(req,res)=>{
-    Category.find({__v:0},(err,result)=>{
-        if(err){
-            res.send(err)
-        }else{
-            res.send(result)
-        }
-    });
+    Category.find({__v:0})
+            .sort({$natural:-1})
+            .exec()
+            .then((err,result)=>{
+                if(err){
+                    res.send(err)
+                }else{
+                    res.send(result)
+                }
+            })
 }
 module.exports.updateCatagoryProfile = (req,res)=>{
     Category.findByIdAndUpdate(req.params.id,{

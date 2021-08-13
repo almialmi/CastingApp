@@ -33,9 +33,6 @@ router.post('/registerAdmin',ctrlAdmin.adminRegister);
 // normal user register
 router.post('/registerNormalUser',ctrlAdmin.normalUserRegister);
 
-// fetch image
-router.get('/fetchProfileImage',jwtHelper.verifyJwtToken,ctrlAdmin.fetchProfileImage);
-
 // verfiy the email
 router.get("/verfiyEmail/:confirmationCode",ctrlAdmin.verifyUser);
 

@@ -42,7 +42,8 @@ module.exports.showComputationPosts=async(req,res)=>{
                               .populate('user',{firstName:1,lastName:1,mobile:1})
                               .populate('eventForComputation',{name:1,description:1})
                               .skip(offset) 
-                              .limit(limit); 
+                              .limit(limit)
+                              .sort({$natural:-1}); 
         
         
         const response = {

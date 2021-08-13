@@ -24,6 +24,9 @@ const storage = multer.diskStorage({
 });
 
 const uploadStorage = multer({storage:storage,
+    limits:{
+        fileSize:1024*1024*20
+    },
     fileFilter : function(req, file, callback) { //file filter
     if (['png','jpg','gif','jepg'].indexOf(file.originalname.split('.')[file.originalname.split('.').length-1]) === -1) {
         return callback(new Error('Wrong extension type'));
@@ -130,7 +133,8 @@ module.exports.fetchAllUser = async(req,res)=>{
         result = await User.find({__v:0}) 
                               .populate('category',{name:1})
                               .skip(offset) 
-                              .limit(limit); 
+                              .limit(limit)
+                              .sort({$natural:-1}); 
           
         const response = {
           "totalItems": numOfStaffs,
@@ -562,7 +566,8 @@ module.exports.fetchUserMaleAndFemale= async(req,res)=>{
        result = await User.find({category:category,gender:gender},{__v:0}) 
                              .populate('category',{name:1})
                              .skip(offset) 
-                             .limit(limit); 
+                             .limit(limit)
+                             .sort({$natural:-1}); 
          
        const response = {
          "totalItems": numOfStaffs,
