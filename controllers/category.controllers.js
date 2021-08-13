@@ -210,27 +210,36 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
 
 
 module.exports.deleteCategory= async(req,res)=>{
-    //var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.params.filename); 
   
-    Category.findById(req.params.id, async function(err,cat){
-        if(err){
-            return res.status(404).send({
-                message: "Category not found"
-            });
-        }else{
-            const user = await User.findOne({category: cat.id});
-            if(user != null){
-                Request.remove({requestedUser:user.id}).exec();
-                ComputationPost.remove({user:user.id}).exec();
-                cat.remove();
-                res.send({message: "Category deleted successfully!"});
+    try{
+        Category.findById(req.params.id, async function(err,cat){
+            if(err){
+                return res.status(400).send({
+                    message: "Bad Request"
+                });
             }else{
-                cat.remove();
-                res.send({message: "Category deleted successfully!"});
+                if(cat == null){
+                    return res.status(404).send({
+                        message: "Category not found"
+                    });
+                }
+                const user = await User.findOne({category: cat.id});
+                if(user != null){
+                    Request.remove({requestedUser:user.id}).exec();
+                    ComputationPost.remove({user:user.id}).exec();
+                    cat.remove();
+                    res.send({message: "Category deleted successfully!"});
+                }else{
+                    cat.remove();
+                    res.send({message: "Category deleted successfully!"});
+    
+                }   
+            }
+        })
 
-            }   
-        }
-    })
-    //fs.unlinkSync(filepath);
+    }catch(error){
+        console.log(error)
+    }
+    
 
 }

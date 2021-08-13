@@ -399,20 +399,27 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
 
 
 module.exports.deleteEvent=(req,res)=>{
-    //var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.params.filename);
+    try{
+        EventForComputation.findById(req.params.id,function(err,eve){
+            if(err){
+                return res.status(404).send({
+                    message: "Bad Request"
+                });
+            }else{
+                if(eve == null){
+                    return res.status(404).send({
+                        message: "Event not found"
+                    });
+                }
+                eve.remove();
+                res.send({message: "Event deleted successfully!"});
     
-    EventForComputation.findById(req.params.id,function(err,eve){
-        if(err){
-            return res.status(404).send({
-                message: "Event not found"
-            });
-        }else{
-            eve.remove();
-            res.send({message: "Event deleted successfully!"});
-        }
+                 
+            }
     })
-
-  //  fs.unlinkSync(filepath);
+    }catch(error){
+        console.log(error)
+    }
 
 }
 
