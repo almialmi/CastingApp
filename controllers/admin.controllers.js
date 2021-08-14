@@ -671,9 +671,7 @@ module.exports.forgotPassword = async(req,res)=>{
              
          });
         await Reset.findOne({ _userId: admin._id,resettoken: { $ne: resettoken.resettoken }}).deleteOne().catch();
-        res.status(200).send({
-             message: 'Reset password code send.Check your email.' 
-        });
+      
         transport.sendMail({
             to: admin.email,
             from:{
@@ -686,8 +684,17 @@ module.exports.forgotPassword = async(req,res)=>{
             resettoken.resettoken + '\n\n' +
             'If you did not request this, please ignore this email and your password will remain unchanged.\n'
 
-        }).catch(err => console.log(err));
-      
+        }).then((result) =>{
+            res.status(200).send({
+                message: 'Reset password code send.Check your email.' 
+            });
+            
+        }).catch((err)=>{
+            res.status(400).send({
+                message: 'connection time out' 
+            })
+        });
+              
 }
 
 // validate the token
@@ -716,7 +723,7 @@ module.exports.newPassword= async(req,res)=>{
     Reset.findOne({ resettoken: req.body.resettoken }, function (err, userToken, next) {
         if (!userToken) {
           return res .status(409) .json({ 
-              message: 'Token has expired' 
+              message: 'Token has expired or not found' 
             });
         }
   

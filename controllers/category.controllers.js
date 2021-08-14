@@ -210,7 +210,6 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
 
 
 module.exports.deleteCategory= async(req,res)=>{
-  
     try{
         Category.findById(req.params.id, async function(err,cat){
             if(err){
