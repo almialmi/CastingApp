@@ -28,6 +28,7 @@ app.use(cors({
 app.use('/api/adminProfilePicStorage',express.static('adminProfilePicStorage'))
 app.use('/api/categoryPhotoStorage',express.static('categoryPhotoStorage'))
 app.use('/api/eventPhotoStorage',express.static('eventPhotoStorage'))
+app.use('/api/usersPhotoStorage',express.static('usersPhotoStorage'))
 app.use(cookieParser());
 app.use(mongoSanitize()); 
 app.use(helmet());

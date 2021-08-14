@@ -30,20 +30,16 @@ var userSchema = new mongoose.Schema({
 
     },
     photo1:{
-        data:Buffer,
-        contentType:String
+        type:String,
+        required:true
     },
     photo2:{
-        data:Buffer,
-        contentType:String
+        type:String,
+        required:true
     },
     photo3:{
-        data:Buffer,
-        contentType:String
-    },
-    photo4:{
-        data:Buffer,
-        contentType:String
+        type:String,
+        required:true
     },
     gender:{
         type:String,

@@ -7,7 +7,8 @@ const validator =require('validator');
 const jwt = require('jsonwebtoken');
 
 
-global.__basedir = __dirname;
+
+
 
 async function isEmailValid(email) {
     return emailValidator.validate(email)
@@ -15,7 +16,7 @@ async function isEmailValid(email) {
 //multer upload storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, __basedir + '/usersPhotoStorage/')
+        cb(null, './usersPhotoStorage/')
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
@@ -32,7 +33,7 @@ const uploadStorage = multer({storage:storage,
         return callback(new Error('Wrong extension type'));
     }
     callback(null, true);
-}}).array('photos',4);
+}}).array('photos',3);
 
 
 
@@ -57,31 +58,21 @@ module.exports.userRegister = (req,res)=>{
                     res.status(404).json({ success: false, msg: 'File is undefined!',file: `usersPhotoStorage/${req.files}`})
 
                 } 
-                else if (req.files.length < 4) {
+                else if (req.files.length < 3) {
                     return res.send("Must upload 4 photos");
                 
                 }else {
 
                 function unlinkImage(n){
                     for(let i=0;i<n;i++){ 
-                        var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.files[i].filename);
-                        console.log(filepath)
+                        var filepath= path.resolve('./usersPhotoStorage/' + req.files[i].filename);
                         fs.unlink(filepath,function(err,result){
                             console.log(err);
-
                         });
                     }
                         
                 } 
-                var newImg1 = fs.readFileSync(req.files[0].path);
-                var encImg1 = newImg1.toString('base64');
-                var newImg2 = fs.readFileSync(req.files[1].path);
-                var encImg2 = newImg2.toString('base64');
-                var newImg3 = fs.readFileSync(req.files[2].path);
-                var encImg3 = newImg3.toString('base64');
-                var newImg4 = fs.readFileSync(req.files[3].path);
-                var encImg4 = newImg4.toString('base64');
-                    
+               
                 var user = new User();
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
@@ -90,14 +81,9 @@ module.exports.userRegister = (req,res)=>{
                 user.category = req.body.category;
                 user.video = req.body.video;
                 user.gender = req.body.gender;
-                user.photo1.data = Buffer.from(encImg1, 'base64');
-                user.photo1.contentType='image/png';
-                user.photo2.data = Buffer.from(encImg2, 'base64');
-                user.photo2.contentType='image/png';
-                user.photo3.data = Buffer.from(encImg3, 'base64');
-                user.photo3.contentType='image/png';
-                user.photo4.data = Buffer.from(encImg4, 'base64');
-                user.photo4.contentType='image/png';
+                user.photo1 = req.files[0].path;
+                user.photo2= req.files[1].path;
+                user.photo3 = req.files[2].path;
 
                 user.save((err,doc)=>{
                         if(!err)
