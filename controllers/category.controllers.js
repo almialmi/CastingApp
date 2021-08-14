@@ -4,13 +4,14 @@ const ComputationPost = require('../models/computationPost.models');
 const User = require('../models/user.models');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
 global.__basedir = __dirname;
 
 //multer upload storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, __basedir + '/categoryPhotoStorage/')
+        cb(null, './categoryPhotoStorage/')
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
@@ -39,26 +40,17 @@ module.exports.registerCategory =(req,res,next)=>{
                 res.send(err)
             }
         } else {
-            
-            //console.log(req.file.filename);
-
             if(req.file == undefined){
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `categoryPhotoStorage/${req.file}`})
 
             } else {
-                function unlinkImage(){
-                    var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.file.filename);
-                    fs.unlink(filepath,function(err,result){
-                        console.log(err);
-                    });
-                  }
-                var newImg = fs.readFileSync(req.file.path);
-                var encImg = newImg.toString('base64');
+                
+                var filepath= path.resolve('./categoryPhotoStorage/' + req.file.filename);
+                
                 var category = new Category();
                 category.name = req.body.name;
-                category.photo.data = Buffer.from(encImg, 'base64');
-                category.photo.contentType='image/png';
+                category.photo= req.file.path;
 
                 category.save((err,doc)=>{
                     if(!err)
@@ -66,7 +58,7 @@ module.exports.registerCategory =(req,res,next)=>{
                           message:"Category create successfully!!"
                       });
                     else{
-                        unlinkImage()
+                        fs.unlink(filepath)
                         if(err)
                            res.status(422).send(err);
                         else
@@ -132,26 +124,18 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
     
                 } 
                 else {
-                    function unlinkImage(){
-                        var filepath= path.resolve(__basedir ,'./categoryPhotoStorage/' + req.file.filename);
-                        fs.unlink(filepath,function(err,result){
-                            console.log(err);
-                        });
-                      }
-                    var newImg = fs.readFileSync(req.file.path);
-                    var encImg = newImg.toString('base64');
+                  
+                    var filepath= path.resolve('./categoryPhotoStorage/' + req.file.filename);
+                      
                     if(!req.body.name){
                         Category.findByIdAndUpdate(req.params.id,{
                             $set:{
-                                photo:{
-                                    data:Buffer.from(encImg, 'base64'),
-                                    contentType:'image/png'
-                                }
+                                photo:req.file.path
                             }
                         }, {new: true})
                         .then(cat => {
                             if(!cat) {
-                                unlinkImage()
+                                fs.unlink(filepath)
                                 return res.status(404).send({
                                     message: " Category not found with this " + req.params.id
                                 });
@@ -160,7 +144,7 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
                                    message:"Category profile pic Update Successfully !!"
                             });
                         }).catch(err => {
-                            unlinkImage()
+                            fs.unlink(filepath)
                             if(err.kind === 'ObjectId') {
                                 return res.status(404).send({
                                     message: "Category not found with this " + req.params.id
@@ -175,10 +159,7 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
                         Category.findByIdAndUpdate(req.params.id,{
                             $set:{
                                 name:req.body.name,
-                                photo:{
-                                    data:Buffer.from(encImg, 'base64'),
-                                    contentType:'image/png'
-                                }
+                                photo:req.file.path
                             }
                         }, {new: true})
                         .then(cat => {
