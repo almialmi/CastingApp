@@ -6,7 +6,6 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-global.__basedir = __dirname;
 
 //multer upload storage
 const storage = multer.diskStorage({
@@ -164,7 +163,7 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
                         }, {new: true})
                         .then(cat => {
                             if(!cat) {
-                                unlinkImage()
+                                fs.unlink(filepath)
                                 return res.status(404).send({
                                     message: " Category not found with this " + req.params.id
                                 });
@@ -173,7 +172,7 @@ module.exports.upadteCategotyProfilePicOrBoth= (req,res)=>{
                                    message:"Category Update Successfully !!"
                             });
                         }).catch(err => {
-                            unlinkImage()
+                            fs.unlink(filepath)
                             if(err.kind === 'ObjectId') {
                                 return res.status(404).send({
                                     message: "Category not found with this " + req.params.id

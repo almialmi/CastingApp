@@ -9,7 +9,7 @@ global.__basedir = __dirname;
 //multer upload storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, __basedir + '/eventPhotoStorage/')
+        cb(null,'./eventPhotoStorage/')
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + "-" + Date.now() + "-" + file.originalname)
@@ -31,31 +31,24 @@ const uploadStorage = multer({storage:storage,
 module.exports.registerEvent =(req,res,next)=>{
     uploadStorage(req, res, (err) => {
         if(err){
-            //console.log(err)
+            
             if(err.code === "LIMIT_UNEXPECTED_FILE"){
                 return res.send("Too many image to upload.");
             }else{
-                res.send(err)
+                console.log(err)
+                res.send("Error happen")
+              
             }
         } else {
-            
-            //console.log(req.file.filename);
-
             if(req.file == undefined){
 
                 res.status(404).json({ success: false, msg: 'File is undefined!',file: `eventPhotoStorage/${req.file}`})
 
             } else {
               
-              function unlinkImage(){
-                var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
-                fs.unlink(filepath,function(err,result){
-                    console.log(err);
-                });
-              }
-
-               var newImg = fs.readFileSync(req.file.path);
-               var encImg = newImg.toString('base64');
+             
+            var filepath= path.resolve('./eventPhotoStorage/' + req.file.filename);
+           
                var startDate = new Date(req.body.startDate);
                var endDate = new Date(req.body.endDate); 
 
@@ -63,8 +56,7 @@ module.exports.registerEvent =(req,res,next)=>{
                eventForCOmputation.name = req.body.name;
                eventForCOmputation.description = req.body.description;
                eventForCOmputation.category = req.body.category;
-               eventForCOmputation.photo.data = Buffer.from(encImg, 'base64');
-               eventForCOmputation.photo.contentType='image/png';
+               eventForCOmputation.photo = req.file.path;
                eventForCOmputation.startDate = startDate;
                eventForCOmputation.endDate = endDate;
 
@@ -74,7 +66,7 @@ module.exports.registerEvent =(req,res,next)=>{
                           message:"Event created successfully!!"
                       });
                     else{
-                        unlinkImage()
+                        fs.unlink(filepath)
                         if(err)
                            res.status(422).send(err);
                         else
@@ -314,27 +306,17 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
     
                 }
                 else {
-                    function unlinkImage(){
-                        var filepath= path.resolve(__basedir ,'./eventPhotoStorage/' + req.file.filename);
-                        fs.unlink(filepath,function(err,result){
-                            console.log(err);
-                        });
-                      }
-        
-                    var newImg = fs.readFileSync(req.file.path);
-                    var encImg = newImg.toString('base64');
+                   
+                var filepath= path.resolve('./eventPhotoStorage/' + req.file.filename);
                 if(!req.body.name && !req.body.description && !req.body.category && !req.body.startDate && !req.body.endDate){
                     EventForComputation.findByIdAndUpdate(req.params.id,{
                         $set:{
-                            photo:{
-                                data:Buffer.from(encImg, 'base64'),
-                                contentType:'image/png'
-                            }
+                            photo:req.file.path
                         }
                     }, {new: true})
                     .then(eve => {
                         if(!eve) {
-                            unlinkImage()
+                            fs.unlink(filepath)
                             return res.status(404).send({
                                 message: " Event not found with this " + req.params.id
                             });
@@ -343,7 +325,7 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                                message:"Event Profile Update Successfully !!"
                         });
                     }).catch(err => {
-                        unlinkImage()
+                        fs.unlink(filepath)
                         if(err.kind === 'ObjectId') {
                             return res.status(404).send({
                                 message: "Event not found with this " + req.params.id
@@ -362,17 +344,14 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                             name:req.body.name,
                             category:req.body.category,
                             description:req.body.description,
-                            photo:{
-                                data:Buffer.from(encImg, 'base64'),
-                                contentType:'image/png'
-                            },
+                            photo:req.file.path,
                             startDate:startDate,
                             endDate:endDate
                         }
                     }, {new: true})
                     .then(eve => {
                         if(!eve) {
-                            unlinkImage()
+                            fs.unlink(filepath)
                             return res.status(404).send({
                                 message: " Event not found with this " + req.params.id
                             });
@@ -381,7 +360,7 @@ module.exports.updateEventProfilePicOrBoth =(req,res)=>{
                                message:"Event Profile Update Successfully !!"
                         });
                     }).catch(err => {
-                        unlinkImage()
+                        fs.unlink(filepath)
                         if(err.kind === 'ObjectId') {
                             return res.status(404).send({
                                 message: "Event not found with this " + req.params.id
