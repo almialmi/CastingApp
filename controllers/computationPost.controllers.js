@@ -71,59 +71,66 @@ module.exports.updateNumberOfLikes = async(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(comp.disLike.indexOf(req.body.id) !== -1){
-                ComputationPost.findByIdAndUpdate(req.params.id,{
-                    $pull:{
-                        disLike:req.body.id
-                    },
-                    $push:{
-                        like:req.body.id
-                     }
-                },{new:true}).exec((err,result)=>{
-                    if(err){
-                        return res.status(422).json({error:err})
-                    }
-                    else{
-                        res.send({
-                            nomberOfLike : result.like.length
-                        })
-                    }
+            if(!comp){
+                res.send({
+                    message:"computation not found"
                 })
+            }else{
+                if(comp.disLike.indexOf(req.body.id) !== -1){
+                    ComputationPost.findByIdAndUpdate(req.params.id,{
+                        $pull:{
+                            disLike:req.body.id
+                        },
+                        $push:{
+                            like:req.body.id
+                         }
+                    },{new:true}).exec((err,result)=>{
+                        if(err){
+                            return res.status(422).json({error:err})
+                        }
+                        else{
+                            res.send({
+                                nomberOfLike : result.like.length
+                            })
+                        }
+                    })
+    
+                }
+                else if(comp.like.indexOf(req.body.id) !== -1){
+                     console.log('exist')
+                     ComputationPost.findByIdAndUpdate(req.params.id,{
+                         $pull:{
+                             like:req.body.id
+                         }
+                     },{new:true}).exec((err,result)=>{
+                         if(err){
+                             return res.status(422).json({error:err})
+                         }
+                         else{
+                             res.send({
+                                 nomberOfLike : result.like.length
+                             })
+                         }
+                     })
+     
+                 }else{
+                     ComputationPost.findByIdAndUpdate(req.params.id,{
+                         $push:{
+                             like:req.body.id
+                         }
+                     },{new:true}).exec((err,result)=>{
+                         if(err){
+                             return res.status(422).json({error:err})
+                         }
+                         else{
+                             res.send({
+                                 nomberOfLike : result.like.length
+                             })
+                         }
+                     })
+             }
 
             }
-            else if(comp.like.indexOf(req.body.id) !== -1){
-                 console.log('exist')
-                 ComputationPost.findByIdAndUpdate(req.params.id,{
-                     $pull:{
-                         like:req.body.id
-                     }
-                 },{new:true}).exec((err,result)=>{
-                     if(err){
-                         return res.status(422).json({error:err})
-                     }
-                     else{
-                         res.send({
-                             nomberOfLike : result.like.length
-                         })
-                     }
-                 })
- 
-             }else{
-                 ComputationPost.findByIdAndUpdate(req.params.id,{
-                     $push:{
-                         like:req.body.id
-                     }
-                 },{new:true}).exec((err,result)=>{
-                     if(err){
-                         return res.status(422).json({error:err})
-                     }
-                     else{
-                         res.send({
-                             nomberOfLike : result.like.length
-                         })
-                     }
-                 })
-         }
             
         }
  
@@ -138,59 +145,65 @@ module.exports.updateNumberOfDisLikes = async(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(comp.like.indexOf(req.body.id) !== -1){
-                ComputationPost.findByIdAndUpdate(req.params.id,{
-                    $pull:{
-                        like:req.body.id
-                    },
-                    $push:{
-                        disLike:req.body.id
-                     }
-                },{new:true}).exec((err,result)=>{
-                    if(err){
-                        return res.status(422).json({error:err})
-                    }
-                    else{
-                        res.send({
-                            nomberOfDislike : result.disLike.length
-                        })
-                    }
+            if(!comp){
+                res.send({
+                    message:"computation not found"
                 })
-
+            }else{
+                if(comp.like.indexOf(req.body.id) !== -1){
+                    ComputationPost.findByIdAndUpdate(req.params.id,{
+                        $pull:{
+                            like:req.body.id
+                        },
+                        $push:{
+                            disLike:req.body.id
+                         }
+                    },{new:true}).exec((err,result)=>{
+                        if(err){
+                            return res.status(422).json({error:err})
+                        }
+                        else{
+                            res.send({
+                                nomberOfDislike : result.disLike.length
+                            })
+                        }
+                    })
+    
+                }
+                else if(comp.disLike.indexOf(req.body.id) !== -1){
+                     console.log('exist')
+                     ComputationPost.findByIdAndUpdate(req.params.id,{
+                         $pull:{
+                            disLike:req.body.id
+                         }
+                     },{new:true}).exec((err,result)=>{
+                         if(err){
+                             return res.status(422).json({error:err})
+                         }
+                         else{
+                             res.send({
+                                 nomberOfDislike : result.disLike.length
+                             })
+                         }
+                     })
+     
+                 }else{
+                     ComputationPost.findByIdAndUpdate(req.params.id,{
+                         $push:{
+                            disLike:req.body.id
+                         }
+                     },{new:true}).exec((err,result)=>{
+                         if(err){
+                             return res.status(422).json({error:err})
+                         }
+                         else{
+                             res.send({
+                                 nomberOfDisike : result.disLike.length
+                             })
+                         }
+                     })
+             }
             }
-            else if(comp.disLike.indexOf(req.body.id) !== -1){
-                 console.log('exist')
-                 ComputationPost.findByIdAndUpdate(req.params.id,{
-                     $pull:{
-                        disLike:req.body.id
-                     }
-                 },{new:true}).exec((err,result)=>{
-                     if(err){
-                         return res.status(422).json({error:err})
-                     }
-                     else{
-                         res.send({
-                             nomberOfDislike : result.disLike.length
-                         })
-                     }
-                 })
- 
-             }else{
-                 ComputationPost.findByIdAndUpdate(req.params.id,{
-                     $push:{
-                        disLike:req.body.id
-                     }
-                 },{new:true}).exec((err,result)=>{
-                     if(err){
-                         return res.status(422).json({error:err})
-                     }
-                     else{
-                         res.send({
-                             nomberOfDisike : result.disLike.length
-                         })
-                     }
-                 })
-         }
             
         }
  })

@@ -417,7 +417,12 @@ module.exports.updateLike =(req,res)=>{
        if(err){
            res.send({error:err})
        }else{
-           if(user.disLike.indexOf(req.body.id) !== -1){
+           if(!user){
+               res.send({
+                   message:"User not found"
+               })
+           }else{
+            if(user.disLike.indexOf(req.body.id) !== -1){
                 User.findByIdAndUpdate(req.params.id,{
                     $pull:{
                         disLike:req.body.id
@@ -470,6 +475,8 @@ module.exports.updateLike =(req,res)=>{
                     }
                 })
         }
+        }
+       
     }
     })
 }
@@ -480,60 +487,66 @@ module.exports.updateDisLike =(req,res)=>{
         if(err){
             res.send({error:err})
         }else{
-            if(user.like.indexOf(req.body.id) !== -1){
-                User.findByIdAndUpdate(req.params.id,{
-                    $pull:{
-                        like:req.body.id
-                    },
-                    $push:{
-                        disLike:req.body.id
-                     }
-                },{new:true}).exec((err,result)=>{
-                    if(err){
-                        return res.status(422).json({error:err})
-                    }
-                    else{
-                        res.send({
-                            nomberOfDislike : result.disLike.length
-                        })
-                    }
+            if(!user){
+                res.send({
+                    message:"User not found"
                 })
-               
-           }
-            else if(user.disLike.indexOf(req.body.id)!== -1){
-                 console.log('exist')
-                 User.findByIdAndUpdate(req.params.id,{
-                     $pull:{
-                        disLike:req.body.id
-                     }
-                 },{new:true}).exec((err,result)=>{
-                     if(err){
-                         return res.status(422).json({error:err})
-                     }
-                     else{
-                         res.send({
-                             nomberOfDislike : result.disLike.length
-                         })
-                     }
-                 })
- 
-             }else{
-                 User.findByIdAndUpdate(req.params.id,{
-                     $push:{
-                        disLike:req.body.id
-                     }
-                 },{new:true}).exec((err,result)=>{
-                     if(err){
-                         return res.status(422).json({error:err})
-                     }
-                     else{
-                         res.send({
-                             nomberOfDisike : result.disLike.length
-                         })
-                     }
-                 })
-         }
-            
+            }else{
+                if(user.like.indexOf(req.body.id) !== -1){
+                    User.findByIdAndUpdate(req.params.id,{
+                        $pull:{
+                            like:req.body.id
+                        },
+                        $push:{
+                            disLike:req.body.id
+                         }
+                    },{new:true}).exec((err,result)=>{
+                        if(err){
+                            return res.status(422).json({error:err})
+                        }
+                        else{
+                            res.send({
+                                nomberOfDislike : result.disLike.length
+                            })
+                        }
+                    })
+                   
+               }
+                else if(user.disLike.indexOf(req.body.id)!== -1){
+                     console.log('exist')
+                     User.findByIdAndUpdate(req.params.id,{
+                         $pull:{
+                            disLike:req.body.id
+                         }
+                     },{new:true}).exec((err,result)=>{
+                         if(err){
+                             return res.status(422).json({error:err})
+                         }
+                         else{
+                             res.send({
+                                 nomberOfDislike : result.disLike.length
+                             })
+                         }
+                     })
+     
+                 }else{
+                     User.findByIdAndUpdate(req.params.id,{
+                         $push:{
+                            disLike:req.body.id
+                         }
+                     },{new:true}).exec((err,result)=>{
+                         if(err){
+                             return res.status(422).json({error:err})
+                         }
+                         else{
+                             res.send({
+                                 nomberOfDisike : result.disLike.length
+                             })
+                         }
+                     })
+             }
+
+            } 
         }
  })
 
