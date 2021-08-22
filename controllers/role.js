@@ -14,6 +14,7 @@ ac.grant("NormalUser")
   .readAny("category")
   .readAny("computationalPost")
   .readAny("user")
+  .readAny('adverizement')
 
 ac.grant("Admin")
   .extend("NormalUser")
@@ -33,6 +34,9 @@ ac.grant("Admin")
   .createAny("computationalPost")
   .updateAny("computationalPost")
   .deleteAny("computationalPost")
+  .createAny('advetizement')
+  .updateAny("advetizement")
+  .deleteAny("advetizement")
  
 return ac;
 })();

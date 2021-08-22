@@ -7,6 +7,7 @@ const ctrlCategory = require('../controllers/category.controllers');
 const ctrlAdmin = require('../controllers/admin.controllers');
 const ctrlComputPost = require('../controllers/computationPost.controllers');
 const jwtHelper = require('../config/jwtHelper');
+const ctrlAdvert = require('../controllers/advertizement.controller');
 
 //******************************* Category Section ********************************/
 
@@ -161,5 +162,13 @@ router.post('/validateToken',ctrlAdmin.validateToken);
 // new password
 router.post('/newPassword',ctrlAdmin.newPassword);
 
+/**********************************Advertizment section*********************************************** */
+router.post('/createAdvertizement',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('createAny','adverizement'),ctrlAdvert.createAdvertizement)
+
+router.get('/showAdvertizement/:status',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('readAny','adverizement'),ctrlAdvert.showAdvertizement);
+
+router.put('/updateAdvertizement/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('updateAny','adverizement'),ctrlAdvert.updateAdvertizement);
+
+router.delete('/deleteAdveritizment/:id',jwtHelper.verifyJwtToken,ctrlAdmin.grantAccess('deleteAny','adverizement'),ctrlAdvert.deleteAdveritizment);
 
 module.exports = router;
