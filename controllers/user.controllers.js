@@ -386,8 +386,7 @@ module.exports.updateUserProfile = async(req,res)=>{
     }
 }
 
-module.exports.deleteUser= (req,res)=>{
-   // var filepath= path.resolve(__basedir ,'./usersPhotoStorage/' + req.params.files); 
+module.exports.deleteUser= (req,res)=>{ 
   try{
     User.findById(req.params.id,function(err,user){
         if(err){
@@ -395,20 +394,20 @@ module.exports.deleteUser= (req,res)=>{
                 message: "Bad Request"
             });
         }else{
-            if(user == null){
+            if(!user){
                 return res.status(404).send({
                     message: "User not found"
                 });
+            }else{
+                user.remove();
+                res.send({message: "User deleted successfully!"});
+
             }
-            user.remove();
-            res.send({message: "User deleted successfully!"});
         }
     })
   }catch(error){
       console.log(error)
   }
-
- //   fs.unlinkSync(filepath);
 
 }
 
