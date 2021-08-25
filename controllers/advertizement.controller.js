@@ -7,10 +7,10 @@ module.exports.createAdvertizement =(req,res,next)=>{
         topic:req.body.topic,
         description:req.body.description
     });
-    post.save((err,cat)=>{
+    advert.save((err,advert)=>{
         if(!err)
             res.status(201).send({
-                message:"Computational post created successfully!!"
+                message:"Advert created successfully!!"
             });
         else{
             if(err)

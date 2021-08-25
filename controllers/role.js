@@ -34,9 +34,9 @@ ac.grant("Admin")
   .createAny("computationalPost")
   .updateAny("computationalPost")
   .deleteAny("computationalPost")
-  .createAny('advetizement')
-  .updateAny("advetizement")
-  .deleteAny("advetizement")
+  .createAny('adverizement')
+  .updateAny("adverizement")
+  .deleteAny("adverizement")
  
 return ac;
 })();
