@@ -24,7 +24,7 @@ var adminSchema = new mongoose.Schema({
         default: 'Pending'
       },
     confirmationCode: { 
-        type: Number
+        type: String
     },
     password:{
         type:String,
