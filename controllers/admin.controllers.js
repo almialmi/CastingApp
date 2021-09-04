@@ -14,7 +14,8 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const phoneToken = require('generate-sms-verification-code');
+//const phoneNumberToken = require('generate-sms-verification-code');
+const rn = require('random-number');
 const emailValidator = require('deep-email-validator');
 const { passwordStrength } = require('check-password-strength')
 
@@ -26,6 +27,12 @@ const pass = process.env.ADMIN_PASSWORD;
 async function isEmailValid(email) {
     return emailValidator.validate(email)
 }
+
+const options = {
+    min: 000000,
+    max: 999999,
+    integer: true
+  }
 
 const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -135,7 +142,7 @@ module.exports.normalUserRegister = async(req,res,next)=>{
     //var validEmail = validator.isEmail(req.body.email);
     if(valid){
         if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
-            const token = phoneNumberToken(6, {type: 'number'})
+            const token = rn(options)
             var admin = new Admin({
                 userName:req.body.userName,
                 email:req.body.email,
