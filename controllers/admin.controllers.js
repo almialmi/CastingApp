@@ -14,8 +14,7 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-//const phoneNumberToken = require('generate-sms-verification-code');
-const rn = require('random-number');
+const phoneNumberToken = require('generate-sms-verification-code');
 const emailValidator = require('deep-email-validator');
 const { passwordStrength } = require('check-password-strength')
 
@@ -28,11 +27,6 @@ async function isEmailValid(email) {
     return emailValidator.validate(email)
 }
 
-const options = {
-    min: 000000,
-    max: 999999,
-    integer: true
-  }
 
 const transport = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -88,8 +82,6 @@ const uploadStorage = multer({storage:storage,
 
 module.exports.adminRegister = async(req,res,next)=>{
     const {valid, reason, validators} = await isEmailValid(req.body.email);
-   // if (valid) return res.send({message: "OK"});
-    //var validEmail = validator.isEmail(req.body.email);
      passwordStrengthCheck = passwordStrength(req.body.password).value
 
     if(valid){ 
@@ -139,10 +131,9 @@ module.exports.adminRegister = async(req,res,next)=>{
 module.exports.normalUserRegister = async(req,res,next)=>{
     const {valid, reason, validators} = await isEmailValid(req.body.email);
     passwordStrengthCheck = passwordStrength(req.body.password).value
-    //var validEmail = validator.isEmail(req.body.email);
     if(valid){
         if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
-            const token = rn(options)
+            const token = phoneNumberToken(6, {type: 'number'})
             var admin = new Admin({
                 userName:req.body.userName,
                 email:req.body.email,
@@ -152,15 +143,15 @@ module.exports.normalUserRegister = async(req,res,next)=>{
             
             admin.save((err)=>{
                 if(!err){
-                    res.send({
-                        message:
-                        "User is registered successfully! Please check your email",
-                    });
                     sendConfirmationEmail(
                         admin.userName,
                         admin.email,
                         admin.confirmationCode
                     );
+                    res.send({
+                        message:
+                        "User is registered successfully! Please check your email",
+                    });
                 }
                 else{
                     if(err)
@@ -185,7 +176,7 @@ module.exports.normalUserRegister = async(req,res,next)=>{
 //verfiy the email
 module.exports.verifyUser = (req, res) => {
     Admin.findOne({
-      confirmationCode: req.params.confirmationCode,
+      confirmationCode: req.params.confirmationCode
     }).then((admin) => {
         if (!admin) {
           return res.status(404).send({ message: "User Not found." });
