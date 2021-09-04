@@ -87,7 +87,7 @@ module.exports.adminRegister = async(req,res,next)=>{
 
     if(valid){ 
         if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
-            const token = phoneNumberToken(8, {type: 'number'})
+            const token = phoneNumberToken(6, {type: 'number'})
             var admin = new Admin({
                 userName:req.body.userName,
                 email:req.body.email,
@@ -135,7 +135,7 @@ module.exports.normalUserRegister = async(req,res,next)=>{
     //var validEmail = validator.isEmail(req.body.email);
     if(valid){
         if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
-            const token = phoneNumberToken(8, {type: 'number'})
+            const token = phoneNumberToken(6, {type: 'number'})
             var admin = new Admin({
                 userName:req.body.userName,
                 email:req.body.email,
