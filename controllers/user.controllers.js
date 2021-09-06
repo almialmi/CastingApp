@@ -76,7 +76,6 @@ module.exports.userRegister = (req,res)=>{
                 var user = new User();
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
-                user.email = req.body.email;
                 user.mobile = formatedphone;
                 user.category = req.body.category;
                 user.video = req.body.video;

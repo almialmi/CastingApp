@@ -130,9 +130,7 @@ module.exports.adminRegister = async(req,res,next)=>{
 
 module.exports.normalUserRegister = async(req,res,next)=>{
     const {valid, reason, validators} = await isEmailValid(req.body.email);
-    passwordStrengthCheck = passwordStrength(req.body.password).value
     if(valid){
-        if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
             const token = phoneNumberToken(6, {type: 'number'})
             var admin = new Admin({
                 userName:req.body.userName,
@@ -161,9 +159,6 @@ module.exports.normalUserRegister = async(req,res,next)=>{
                 }
                     
             });
-    }else{
-        res.send("please enter strong by the combination of capital letter,special character and small letter!!")
-    }
     }else{
         return res.status(400).send({
             message: "Please provide a valid email address.",
@@ -248,8 +243,6 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
       });
     }
     else if(!req.body.email && !req.body.userName){
-        passwordStrengthCheck = passwordStrength(req.body.password).value
-        if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
             const salt = await bcrypt.genSaltSync(10);
             const password = await req.body.password;
             Admin.findByIdAndUpdate(id,{
@@ -277,9 +270,7 @@ module.exports.updateAdminAndNormalUserProfile = async(req,res)=>{
                 });
         });
 
-        }else{
-            res.send("please enter strong by the combination of capital letter,special character and small letter!!")
-        }        
+              
     }
     else if(!req.body.password && !req.body.userName){
         const {valid, reason, validators} = await isEmailValid(req.body.email);
@@ -731,8 +722,6 @@ module.exports.newPassword= async(req,res)=>{
                 message: 'User does not exist'
              });
           }
-          passwordStrengthCheck = passwordStrength(req.body.newPassword).value
-          if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
             userEmail.password = req.body.newPassword;
             userEmail.save(function (err) {
                 if (err) {
@@ -748,9 +737,6 @@ module.exports.newPassword= async(req,res)=>{
     
               });
 
-          }else{
-            res.send("please enter strong by the combination of capital letter,special character and small letter!!")
-          }
        
         });
   
