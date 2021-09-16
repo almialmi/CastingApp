@@ -16,7 +16,6 @@ const fs = require('fs');
 const path = require('path');
 const phoneNumberToken = require('generate-sms-verification-code');
 const emailValidator = require('deep-email-validator');
-const { passwordStrength } = require('check-password-strength')
 
 
 const user = process.env.ADMIN_EMAIL;
@@ -82,10 +81,7 @@ const uploadStorage = multer({storage:storage,
 
 module.exports.adminRegister = async(req,res,next)=>{
     const {valid, reason, validators} = await isEmailValid(req.body.email);
-     passwordStrengthCheck = passwordStrength(req.body.password).value
-
     if(valid){ 
-        if(passwordStrengthCheck == "Medium" || passwordStrengthCheck == "Strong"){
             const token = phoneNumberToken(6, {type: 'number'})
             var admin = new Admin({
                 userName:req.body.userName,
@@ -115,9 +111,7 @@ module.exports.adminRegister = async(req,res,next)=>{
                 }
                     
             });
-        }else{
-            res.send("please enter strong by the combination of capital letter,special character and small letter!!")
-        }
+       
     }else{
         return res.status(400).send({
             message: "Please provide a valid email address.",
