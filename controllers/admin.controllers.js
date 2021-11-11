@@ -93,13 +93,13 @@ module.exports.adminRegister = async(req,res,next)=>{
             
             admin.save((err)=>{
                 if(!err){
-                    sendConfirmationEmail(
+                  /*  sendConfirmationEmail(
                         admin.userName,
                         admin.email,
                         admin.confirmationCode
-                    );
+                    );*/
                     res.send({
-                        message:"Admin is registered successfully! Please check your email"
+                        message:"Admin is registered successfully!"
                     });
 
                 }
@@ -135,14 +135,14 @@ module.exports.normalUserRegister = async(req,res,next)=>{
             
             admin.save((err)=>{
                 if(!err){
-                    sendConfirmationEmail(
+                   /* sendConfirmationEmail(
                         admin.userName,
                         admin.email,
                         admin.confirmationCode
-                    );
+                    );*/
                     res.send({
                         message:
-                        "User is registered successfully! Please check your email",
+                        "User is registered successfully!",
                     });
                 }
                 else{

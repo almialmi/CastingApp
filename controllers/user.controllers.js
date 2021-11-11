@@ -76,6 +76,7 @@ module.exports.userRegister = (req,res)=>{
                 var user = new User();
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
+                user.age = req.body.age;
                 user.mobile = formatedphone;
                 user.category = req.body.category;
                 user.video = req.body.video;
@@ -142,7 +143,7 @@ module.exports.fetchAllUser = async(req,res)=>{
 //update but some issue 
 
 module.exports.updateUserProfile = async(req,res)=>{
-    if (!req.body.lastName && !req.body.email && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+    if (!req.body.lastName && !req.body.email && !req.body.age && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
         User.findByIdAndUpdate(req.params.id,{
             $set:{
                 firstName:req.body.firstName
@@ -168,7 +169,7 @@ module.exports.updateUserProfile = async(req,res)=>{
             });
       });
     }
-    else if(!req.body.firstName && !req.body.email && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+    else if(!req.body.firstName && !req.body.email && !req.body.age  && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
         
         User.findByIdAndUpdate(req.params.id,{
             $set:{
@@ -195,7 +196,34 @@ module.exports.updateUserProfile = async(req,res)=>{
             });
       });
     }
-    else if(!req.body.firstName && !req.body.lastName && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+    else if(!req.body.firstName && !req.body.email && !req.body.lastName && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
+        
+        User.findByIdAndUpdate(req.params.id,{
+            $set:{
+                age:req.body.age
+            }
+        }, {new: true})
+        .then(user => {
+            if(!user) {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });
+            }
+            res.send({
+                   message:"User age Update Successfully !!"
+            });
+        }).catch(err => {
+            if(err.kind === 'ObjectId') {
+                return res.status(404).send({
+                    message: "User not found with this " + req.params.id
+                });                
+            }
+            return res.status(500).send({
+                message: "Error updating User profile with id " + req.params.id
+            });
+      });
+    }
+    else if(!req.body.firstName && !req.body.lastName && !req.body.age  && !req.body.mobile && !req.body.video && !req.body.category && !req.body.gender){
         const {valid, reason, validators} = await isEmailValid(req.body.email);
         if(valid){   
             User.findByIdAndUpdate(id,{
@@ -230,7 +258,7 @@ module.exports.updateUserProfile = async(req,res)=>{
             })
         }
     }
-    else if(!req.body.firstName && !req.body.lastName && !req.body.email && !req.body.video && !req.body.category && !req.body.gender){
+    else if(!req.body.firstName && !req.body.lastName &&  !req.body.email && !req.body.age  && !req.body.video && !req.body.category && !req.body.gender){
         let formatedphone = '';
         let phone = req.body.mobile;
         if (phone.charAt(0) == '0') {
@@ -263,7 +291,7 @@ module.exports.updateUserProfile = async(req,res)=>{
             });
         });
     }
-    else if(!req.body.firstName && !req.body.lastName && !req.body.email && ! req.body.mobile && !req.body.category && !req.body.gender){
+    else if(!req.body.firstName && !req.body.lastName && !req.body.age  && !req.body.email && ! req.body.mobile && !req.body.category && !req.body.gender){
         
         User.findByIdAndUpdate(req.params.id,{
             $set:{
@@ -291,7 +319,7 @@ module.exports.updateUserProfile = async(req,res)=>{
       });
 
     }
-    else if(!req.body.firstName && !req.body.lastName && !req.body.email && ! req.body.mobile && !req.body.video && !req.body.gender){
+    else if(!req.body.firstName && !req.body.lastName && !req.body.age && !req.body.email && ! req.body.mobile && !req.body.video && !req.body.gender){
         
         User.findByIdAndUpdate(req.params.id,{
             $set:{
@@ -318,7 +346,7 @@ module.exports.updateUserProfile = async(req,res)=>{
             });
       });
     }
-    else if(!req.body.firstName && !req.body.lastName && !req.body.email && ! req.body.mobile && !req.body.category && !req.body.video){
+    else if(!req.body.firstName && !req.body.lastName && !req.body.age && !req.body.email && ! req.body.mobile && !req.body.category && !req.body.video){
         User.findByIdAndUpdate(req.params.id,{
             $set:{
                 gender:req.body.gender
@@ -355,6 +383,7 @@ module.exports.updateUserProfile = async(req,res)=>{
             $set:{
                  firstName: req.body.firstName,
                  lastName : req.body.lastName,
+                 age:req.body.age,
                  email : req.body.email,
                  mobile : formatedphone,
                  category: req.body.category,

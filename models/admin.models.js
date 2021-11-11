@@ -21,7 +21,7 @@ var adminSchema = new mongoose.Schema({
     status: {
         type: String, 
         enum: ['Pending', 'Active'],
-        default: 'Pending'
+        default: 'Active'
       },
     confirmationCode: { 
         type: String
